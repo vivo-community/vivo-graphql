@@ -1,4 +1,4 @@
-package graphql_endpoint
+package vivographql
 
 func FigurePaging(size int, from int, totalHits int) PageInfo {
 	// has to at least be page 1, maybe even if totalHits = 0

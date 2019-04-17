@@ -1,4 +1,4 @@
-package elastic
+package vivographql
 
 import (
 	"net/http"
@@ -6,13 +6,18 @@ import (
 	"github.com/olivere/elastic"
 )
 
-var Client *elastic.Client
+//https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 
-func GetClient() *elastic.Client {
-	return Client
+//ge "github.com/OIT-ads-web/graphql_endpoint"
+//"github.com/davecgh/go-spew/spew"
+
+var ElasticClient *elastic.Client
+
+func GetElasticClient() *elastic.Client {
+	return ElasticClient
 }
 
-func MakeClient(url string) error {
+func MakeElasticClient(url string) error {
 	// establishing a 'global' client
 	client, err := elastic.NewClient(elastic.SetURL(url),
 		elastic.SetSniff(false))
@@ -20,11 +25,11 @@ func MakeClient(url string) error {
 	// NOTE: this is establishing a global client because the elastic client is
 	// supposed to be long-lived
 	// see https://github.com/olivere/elastic/blob/release-branch.v6/client.go
-	Client = client
+	ElasticClient = client
 	return err
 }
 
-func MakeClientDebug(url string, httpClient *http.Client) error {
+func MakeElasticClientDebug(url string, httpClient *http.Client) error {
 	// establishing a 'global' client
 	client, err := elastic.NewClient(elastic.SetURL(url),
 		elastic.SetSniff(false),
@@ -33,6 +38,6 @@ func MakeClientDebug(url string, httpClient *http.Client) error {
 	// NOTE: this is establishing a global client because the elastic client is
 	// supposed to be long-lived
 	// see https://github.com/olivere/elastic/blob/release-branch.v6/client.go
-	Client = client
+	ElasticClient = client
 	return err
 }

@@ -1,8 +1,151 @@
-package graphql
+package vivographql
 
+//https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
 )
+
+func MakeHandler() *handler.Handler {
+	schema := MakeSchema()
+	h := handler.New(&handler.Config{
+		Schema:   &schema,
+		GraphiQL: true,
+		Pretty:   true,
+	})
+	return h
+}
+
+func MakeSchema() graphql.Schema {
+	var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
+		Query: RootQuery,
+	})
+	return schema
+}
+
+var RootQuery = graphql.NewObject(graphql.ObjectConfig{
+	Name: "RootQuery",
+	Fields: graphql.Fields{
+		"personList":      GetPeople,
+		"person":          GetPerson,
+		"grant":           GetGrant,
+		"publication":     GetPublication,
+		"publicationList": GetPublications,
+		"grantList":       GetGrants,
+	},
+})
+
+var GetPerson = &graphql.Field{
+	Type:        person,
+	Description: "Get Person",
+	Args: graphql.FieldConfigArgument{
+		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+	},
+	Resolve: personResolver,
+}
+
+var GetPublication = &graphql.Field{
+	Type:        publication,
+	Description: "Get Publication",
+	Args: graphql.FieldConfigArgument{
+		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+	},
+	Resolve: publicationResolver,
+}
+
+var GetGrant = &graphql.Field{
+	Type:        grant,
+	Description: "Get Grant",
+	Args: graphql.FieldConfigArgument{
+		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+	},
+	Resolve: grantResolver,
+}
+
+var PersonFilter *graphql.InputObject = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name:        "PersonFilter",
+	Description: "Filter on People List",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"limit": &graphql.InputObjectFieldConfig{
+			Type:         graphql.Int,
+			DefaultValue: 100,
+		},
+		"offset": &graphql.InputObjectFieldConfig{
+			Type:         graphql.Int,
+			DefaultValue: 0,
+		},
+		"query": &graphql.InputObjectFieldConfig{
+			Type:         graphql.String,
+			DefaultValue: "",
+		},
+	},
+})
+
+var GetPeople = &graphql.Field{
+	Type:        personList,
+	Description: "Get all people",
+	Args: graphql.FieldConfigArgument{
+		"filter": &graphql.ArgumentConfig{Type: PersonFilter},
+	},
+	Resolve: peopleResolver,
+}
+
+// TODO: very likely a way to avoid the code duplication
+var PublicationFilter *graphql.InputObject = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name:        "PublicationFilter",
+	Description: "Filter on Publication List",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"limit": &graphql.InputObjectFieldConfig{
+			Type:         graphql.Int,
+			DefaultValue: 100,
+		},
+		"offset": &graphql.InputObjectFieldConfig{
+			Type:         graphql.Int,
+			DefaultValue: 0,
+		},
+		"query": &graphql.InputObjectFieldConfig{
+			Type:         graphql.String,
+			DefaultValue: "",
+		},
+	},
+})
+
+var GetPublications = &graphql.Field{
+	Type:        publicationList,
+	Description: "Get all publications",
+	Args: graphql.FieldConfigArgument{
+		"filter": &graphql.ArgumentConfig{Type: PublicationFilter},
+	},
+	Resolve: publicationsResolver,
+}
+
+var GrantFilter *graphql.InputObject = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name:        "GrantFilter",
+	Description: "Filter on Grant List",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"limit": &graphql.InputObjectFieldConfig{
+			Type:         graphql.Int,
+			DefaultValue: 100,
+		},
+		"offset": &graphql.InputObjectFieldConfig{
+			Type:         graphql.Int,
+			DefaultValue: 0,
+		},
+		"query": &graphql.InputObjectFieldConfig{
+			Type:         graphql.String,
+			DefaultValue: "",
+		},
+	},
+})
+
+var GetGrants = &graphql.Field{
+	Type:        grantList,
+	Description: "Get all grants",
+	Args: graphql.FieldConfigArgument{
+		"filter": &graphql.ArgumentConfig{Type: GrantFilter},
+	},
+	Resolve: grantsResolver,
+}
 
 // NOTE: removed Type from end of names per
 // https://dave.cheney.net/practical-go/presentations/qcon-china.html
@@ -349,3 +492,38 @@ var publicationList = graphql.NewObject(graphql.ObjectConfig{
 		"pageInfo": &graphql.Field{Type: pageInfo},
 	},
 })
+
+// these are graphql only json models
+type PageInfo struct {
+	PerPage     int `json:"perPage"`
+	CurrentPage int `json:"page"`
+	TotalPages  int `json:"totalPages"`
+	Count       int `json:"count"`
+}
+
+type Facet struct {
+	Label string `json:"label"`
+	Count int64  `json:"count"`
+}
+
+type PeopleFacets struct {
+	Keywords    []Facet `json:"keywords"`
+	Types       []Facet `json:"types"`
+	Departments []Facet `json:"departments"`
+}
+
+type PersonList struct {
+	Results  []Person      `json:"data"`
+	PageInfo PageInfo      `json:"pageInfo"`
+	Facets   *PeopleFacets `json:"facets"`
+}
+
+type PublicationList struct {
+	Results  []Publication `json:"data"`
+	PageInfo PageInfo      `json:"pageInfo"`
+}
+
+type GrantList struct {
+	Results  []Grant  `json:"data"`
+	PageInfo PageInfo `json:"pageInfo"`
+}

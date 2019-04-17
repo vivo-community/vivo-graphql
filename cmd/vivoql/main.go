@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
-	ge "github.com/OIT-ads-web/graphql_endpoint"
-	"github.com/OIT-ads-web/graphql_endpoint/elastic"
-	"github.com/OIT-ads-web/graphql_endpoint/graphql"
-	"github.com/rs/cors"
-	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/rs/cors"
+	"github.com/spf13/viper"
+	vq "github.com/vivo-community/vivo-graphql"
 )
 
-var conf ge.Config
+var conf vq.Config
 
 func main() {
 	log.SetOutput(os.Stdout)
@@ -26,9 +25,9 @@ func main() {
 		viper.SetConfigName("config")
 		viper.SetConfigType("toml")
 		viper.AddConfigPath(".")
-        
+
 		value, exists := os.LookupEnv("CONFIG_PATH")
-		if (exists) {
+		if exists {
 			viper.AddConfigPath(value)
 		}
 		viper.ReadInConfig()
@@ -37,7 +36,7 @@ func main() {
 		replacer := strings.NewReplacer(".", "_")
 		viper.SetEnvKeyReplacer(replacer)
 		viper.BindEnv("elastic.url")
-        viper.BindEnv("graphql.port")
+		viper.BindEnv("graphql.port")
 	}
 
 	if err := viper.Unmarshal(&conf); err != nil {
@@ -45,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := elastic.MakeClient(conf.Elastic.Url); err != nil {
+	if err := vq.MakeElasticClient(conf.Elastic.Url); err != nil {
 		fmt.Printf("could not establish elastic client %s\n", err)
 		os.Exit(1)
 	}
@@ -54,7 +53,7 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	handler := graphql.MakeHandler()
+	handler := vq.MakeHandler()
 	http.Handle("/graphql", c.Handler(handler))
 
 	port := conf.Graphql.Port

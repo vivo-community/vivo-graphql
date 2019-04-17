@@ -1,23 +1,21 @@
-package elastic
+package vivographql
 
-//https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 
-	ge "github.com/OIT-ads-web/graphql_endpoint"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
 )
 
 // NOTE: these should all take a 'context' parameter
-func FindPerson(personId string) (ge.Person, error) {
-	var person = ge.Person{}
+func FindPerson(personId string) (Person, error) {
+	var person = Person{}
 
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	log.Printf("looking for person %s\n", personId)
 
@@ -33,11 +31,11 @@ func FindPerson(personId string) (ge.Person, error) {
 	return person, err
 }
 
-func FindPublication(publicationId string) (ge.Publication, error) {
-	var publication = ge.Publication{}
+func FindPublication(publicationId string) (Publication, error) {
+	var publication = Publication{}
 
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	log.Printf("looking for publication %s\n", publicationId)
 
@@ -53,11 +51,11 @@ func FindPublication(publicationId string) (ge.Publication, error) {
 	return publication, err
 }
 
-func FindGrant(grantId string) (ge.Grant, error) {
-	var grant = ge.Grant{}
+func FindGrant(grantId string) (Grant, error) {
+	var grant = Grant{}
 
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	log.Printf("looking for grant %s\n", grantId)
 
@@ -73,14 +71,14 @@ func FindGrant(grantId string) (ge.Grant, error) {
 	return grant, err
 }
 
-func parsePeopleAggregations(facets elastic.Aggregations) *ge.PeopleFacets {
-	peopleFacets := &ge.PeopleFacets{}
+func parsePeopleAggregations(facets elastic.Aggregations) *PeopleFacets {
+	peopleFacets := &PeopleFacets{}
 
 	if agg, found := facets.Nested("keywords"); found {
-		var facets []ge.Facet
+		var facets []Facet
 		if sub, subFound := agg.Terms("keyword"); subFound {
 			for _, bucket := range sub.Buckets {
-				facet := ge.Facet{Label: bucket.Key.(string), Count: bucket.DocCount}
+				facet := Facet{Label: bucket.Key.(string), Count: bucket.DocCount}
 				facets = append(facets, facet)
 			}
 		}
@@ -88,10 +86,10 @@ func parsePeopleAggregations(facets elastic.Aggregations) *ge.PeopleFacets {
 	}
 
 	if agg, found := facets.Nested("affiliations"); found {
-		var facets []ge.Facet
+		var facets []Facet
 		if sub, subFound := agg.Terms("department"); subFound {
 			for _, bucket := range sub.Buckets {
-				facet := ge.Facet{Label: bucket.Key.(string), Count: bucket.DocCount}
+				facet := Facet{Label: bucket.Key.(string), Count: bucket.DocCount}
 				facets = append(facets, facet)
 			}
 		}
@@ -99,9 +97,9 @@ func parsePeopleAggregations(facets elastic.Aggregations) *ge.PeopleFacets {
 	}
 
 	if agg, found := facets.Terms("types"); found {
-		var facets []ge.Facet
+		var facets []Facet
 		for _, bucket := range agg.Buckets {
-			facet := ge.Facet{Label: bucket.Key.(string), Count: bucket.DocCount}
+			facet := Facet{Label: bucket.Key.(string), Count: bucket.DocCount}
 			facets = append(facets, facet)
 		}
 		peopleFacets.Types = facets
@@ -109,10 +107,10 @@ func parsePeopleAggregations(facets elastic.Aggregations) *ge.PeopleFacets {
 	return peopleFacets
 }
 
-func FindPeople(limit int, offset int, query string) (ge.PersonList, error) {
-	var people []ge.Person
+func FindPeople(limit int, offset int, query string) (PersonList, error) {
+	var people []Person
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	q := elastic.NewQueryStringQuery(query)
 	log.Println("looking for people")
@@ -152,7 +150,7 @@ func FindPeople(limit int, offset int, query string) (ge.PersonList, error) {
 	}
 
 	for _, hit := range searchResult.Hits.Hits {
-		person := ge.Person{}
+		person := Person{}
 		err := json.Unmarshal(*hit.Source, &person)
 		if err != nil {
 			panic(err)
@@ -164,17 +162,17 @@ func FindPeople(limit int, offset int, query string) (ge.PersonList, error) {
 	totalHits := int(searchResult.TotalHits())
 	log.Printf("total people hits: %d\n", totalHits)
 
-	pageInfo := ge.FigurePaging(limit, offset, totalHits)
+	pageInfo := FigurePaging(limit, offset, totalHits)
 	facets := parsePeopleAggregations(searchResult.Aggregations)
-	personList := ge.PersonList{Results: people, PageInfo: pageInfo, Facets: facets}
+	personList := PersonList{Results: people, PageInfo: pageInfo, Facets: facets}
 	return personList, err
 }
 
-func FindPublications(limit int, offset int, query string) (ge.PublicationList, error) {
-	var publications []ge.Publication
+func FindPublications(limit int, offset int, query string) (PublicationList, error) {
+	var publications []Publication
 	ctx := context.Background()
 	// should query elastic here
-	client := GetClient()
+	client := GetElasticClient()
 
 	//q := elastic.NewMatchAllQuery()
 	q := elastic.NewQueryStringQuery(query)
@@ -207,7 +205,7 @@ func FindPublications(limit int, offset int, query string) (ge.PublicationList, 
 	}
 
 	for _, hit := range searchResult.Hits.Hits {
-		publication := ge.Publication{}
+		publication := Publication{}
 		err := json.Unmarshal(*hit.Source, &publication)
 		if err != nil {
 			panic(err)
@@ -219,21 +217,21 @@ func FindPublications(limit int, offset int, query string) (ge.PublicationList, 
 	totalHits := int(searchResult.TotalHits())
 	log.Printf("total publication hits: %d\n", totalHits)
 
-	pageInfo := ge.FigurePaging(limit, offset, totalHits)
+	pageInfo := FigurePaging(limit, offset, totalHits)
 	// eventually
 	//facets := parsePublicationsAggregations(searchResult.Aggregations)
-	//publicationList := ge.PublicationList{Results: publications, PageInfo: pageInfo, Facets: facets}
-	publicationList := ge.PublicationList{Results: publications, PageInfo: pageInfo}
+	//publicationList := PublicationList{Results: publications, PageInfo: pageInfo, Facets: facets}
+	publicationList := PublicationList{Results: publications, PageInfo: pageInfo}
 	return publicationList, err
 	//return publications, err
 }
 
-func FindPersonPublications(personId string, limit int, offset int) (ge.PublicationList, error) {
-	var publications []ge.Publication
+func FindPersonPublications(personId string, limit int, offset int) (PublicationList, error) {
+	var publications []Publication
 	var publicationIds []string
 
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	q := elastic.NewMatchQuery("personId", personId)
 
@@ -250,7 +248,7 @@ func FindPersonPublications(personId string, limit int, offset int) (ge.Publicat
 
 	// FIXME: could optimize better - dataloader etc...
 	for _, hit := range searchResult.Hits.Hits {
-		authorship := ge.Authorship{}
+		authorship := Authorship{}
 		err := json.Unmarshal(*hit.Source, &authorship)
 		if err != nil {
 			panic(err)
@@ -285,7 +283,7 @@ func FindPersonPublications(personId string, limit int, offset int) (ge.Publicat
 	}
 
 	for _, hit := range pubResults.Hits.Hits {
-		publication := ge.Publication{}
+		publication := Publication{}
 		err := json.Unmarshal(*hit.Source, &publication)
 		if err != nil {
 			panic(err)
@@ -295,16 +293,16 @@ func FindPersonPublications(personId string, limit int, offset int) (ge.Publicat
 
 	log.Printf("size: %d, from:%d\n", limit, offset)
 
-	pageInfo := ge.FigurePaging(limit, offset, totalHits)
-	publicationList := ge.PublicationList{Results: publications, PageInfo: pageInfo}
+	pageInfo := FigurePaging(limit, offset, totalHits)
+	publicationList := PublicationList{Results: publications, PageInfo: pageInfo}
 
 	return publicationList, err
 }
 
-func FindGrants(limit int, offset int, query string) (ge.GrantList, error) {
-	var grants []ge.Grant
+func FindGrants(limit int, offset int, query string) (GrantList, error) {
+	var grants []Grant
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	//q := elastic.NewMatchAllQuery()
 	q := elastic.NewQueryStringQuery(query)
@@ -322,7 +320,7 @@ func FindGrants(limit int, offset int, query string) (ge.GrantList, error) {
 	}
 
 	for _, hit := range searchResult.Hits.Hits {
-		grant := ge.Grant{}
+		grant := Grant{}
 		err := json.Unmarshal(*hit.Source, &grant)
 		if err != nil {
 			panic(err)
@@ -334,20 +332,20 @@ func FindGrants(limit int, offset int, query string) (ge.GrantList, error) {
 	totalHits := int(searchResult.TotalHits())
 	log.Printf("total grant hits: %d\n", totalHits)
 
-	pageInfo := ge.FigurePaging(limit, offset, totalHits)
+	pageInfo := FigurePaging(limit, offset, totalHits)
 	// eventually
 	//facets := parseGrantsAggregations(searchResult.Aggregations)
-	//grantList := ge.GrantList{Results: grants, PageInfo: pageInfo, Facets: facets}
-	grantList := ge.GrantList{Results: grants, PageInfo: pageInfo}
+	//grantList := GrantList{Results: grants, PageInfo: pageInfo, Facets: facets}
+	grantList := GrantList{Results: grants, PageInfo: pageInfo}
 	return grantList, err
 }
 
-func FindPersonGrants(personId string, limit int, offset int) (ge.GrantList, error) {
-	var grants []ge.Grant
+func FindPersonGrants(personId string, limit int, offset int) (GrantList, error) {
+	var grants []Grant
 	var grantIds []string
 
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	q := elastic.NewMatchQuery("personId", personId)
 
@@ -368,7 +366,7 @@ func FindPersonGrants(personId string, limit int, offset int) (ge.GrantList, err
 
 	// fixme: could optimize better - dataloader etc...
 	for _, hit := range searchResult.Hits.Hits {
-		fundingRole := ge.FundingRole{}
+		fundingRole := FundingRole{}
 		err := json.Unmarshal(*hit.Source, &fundingRole)
 		if err != nil {
 			panic(err)
@@ -393,7 +391,7 @@ func FindPersonGrants(personId string, limit int, offset int) (ge.GrantList, err
 		panic(err)
 	}
 	for _, hit := range grantResults.Hits.Hits {
-		grant := ge.Grant{}
+		grant := Grant{}
 		err := json.Unmarshal(*hit.Source, &grant)
 		if err != nil {
 			panic(err)
@@ -401,15 +399,15 @@ func FindPersonGrants(personId string, limit int, offset int) (ge.GrantList, err
 		grants = append(grants, grant)
 	}
 
-	pageInfo := ge.FigurePaging(limit, offset, totalHits)
-	grantList := ge.GrantList{Results: grants, PageInfo: pageInfo}
+	pageInfo := FigurePaging(limit, offset, totalHits)
+	grantList := GrantList{Results: grants, PageInfo: pageInfo}
 	return grantList, err
 }
 
 // remaining are just debug/util functions
 func ListAll(index string) {
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 	q := elastic.NewMatchAllQuery()
 
 	searchResult, err := client.Search().
@@ -443,7 +441,7 @@ func IdQuery(index string, ids []string) {
 	// NOTE: can send 'type' into NewIdsQuery
 	q := elastic.NewIdsQuery().Ids(ids...) //.QueryName("my_query")
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	searchResult, err := client.Search().
 		Index(index).
@@ -474,7 +472,7 @@ func IdQuery(index string, ids []string) {
 
 func FindOne(index string, personId string) {
 	ctx := context.Background()
-	client := GetClient()
+	client := GetElasticClient()
 
 	get1, err := client.Get().
 		Index(index).

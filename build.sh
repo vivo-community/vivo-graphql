@@ -1,9 +1,9 @@
 #!/bin/sh
 
-cd cmd/elastic_query
+cd cmd/vivoql
 go build
 cd ../../
-cd cmd/graphql_server
+cd cmd/vivo_mappings
 go build
-
+cd ../../
 

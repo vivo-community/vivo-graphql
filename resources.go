@@ -1,4 +1,9 @@
-package graphql_endpoint
+package vivographql
+
+type Identifiable interface {
+	ID() string
+	TypeName() string
+}
 
 // these are elastic json models
 type Type struct {
@@ -50,6 +55,10 @@ type ServiceRole struct {
 	Organization Organization   `json:"organization" elastic:"type:object"`
 	Type         Type           `json:"type" elastic:"type:object"`
 	PersonId     string         `json:"personId"`
+}
+
+func (s ServiceRole) ID() string {
+	return s.Id
 }
 
 type Email struct {
@@ -208,39 +217,4 @@ type Publication struct {
 	Volume           string                `json:"volume"`
 	Issue            string                `json:"issue"`
 	KeywordList      []PublicationKeyword  `json:"keywordList" elastic:"type:nested"`
-}
-
-// these are graphql only json models
-type PageInfo struct {
-	PerPage     int `json:"perPage"`
-	CurrentPage int `json:"page"`
-	TotalPages  int `json:"totalPages"`
-	Count       int `json:"count"`
-}
-
-type Facet struct {
-	Label string `json:"label"`
-	Count int64  `json:"count"`
-}
-
-type PeopleFacets struct {
-	Keywords    []Facet `json:"keywords"`
-	Types       []Facet `json:"types"`
-	Departments []Facet `json:"departments"`
-}
-
-type PersonList struct {
-	Results  []Person      `json:"data"`
-	PageInfo PageInfo      `json:"pageInfo"`
-	Facets   *PeopleFacets `json:"facets"`
-}
-
-type PublicationList struct {
-	Results  []Publication `json:"data"`
-	PageInfo PageInfo      `json:"pageInfo"`
-}
-
-type GrantList struct {
-	Results  []Grant  `json:"data"`
-	PageInfo PageInfo `json:"pageInfo"`
 }

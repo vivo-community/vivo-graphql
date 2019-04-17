@@ -1,4 +1,4 @@
-package graphql_endpoint_test
+package vivographql_test
 
 import (
 	"context"
@@ -7,22 +7,23 @@ import (
 	"os"
 	"testing"
 
-	el "github.com/OIT-ads-web/graphql_endpoint/elastic"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
-	//"fmt"
+
+	vq "github.com/vivo-community/vivo-graphql"
 )
 
 func TestElasticIdQuery(t *testing.T) {
 	url := "http://localhost:9200"
-	if err := el.MakeClient(url); err != nil {
+	if err := vq.MakeElasticClient(url); err != nil {
 		log.Printf("could not establish elastic client %s\n", err)
 		os.Exit(1)
 	}
 
-	defer el.Client.Stop()
+	defer vq.ElasticClient.Stop()
 
-	el.IdQuery("people", []string{"per4774112", "per8608642"})
+	// TODO: first need to add people - than check if exist
+	vq.IdQuery("people", []string{"per4774112", "per8608642"})
 }
 
 /*
@@ -220,12 +221,12 @@ func (f *Finder) aggs(service *elastic.SearchService) *elastic.SearchService {
 
 func TestElastic(t *testing.T) {
 	url := "http://localhost:9200"
-	if err := el.MakeClient(url); err != nil {
+	if err := vq.MakeElasticClient(url); err != nil {
 		log.Printf("could not establish elastic client %s\n", err)
 		os.Exit(1)
 	}
 
-	defer el.Client.Stop()
+	defer vq.ElasticClient.Stop()
 
 	t.Run("A=1", testElasticAggregations)
 }
@@ -241,7 +242,7 @@ func testElasticAggregations(t *testing.T) {
 		defer el.Client.Stop()
 	*/
 	ctx := context.Background()
-	client := el.GetClient()
+	client := vq.GetElasticClient()
 
 	q := elastic.NewMatchAllQuery()
 

@@ -1,13 +1,14 @@
-package graphql
+package vivographql
 
 //https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
 	"fmt"
 	"log"
 
-	ge "github.com/OIT-ads-web/graphql_endpoint"
-	"github.com/OIT-ads-web/graphql_endpoint/elastic"
+	//ge "github.com/OIT-ads-web/graphql_endpoint"
+	//"github.com/OIT-ads-web/graphql_endpoint/elastic"
 	"github.com/graphql-go/graphql"
+	//"github.com/vivo-community/vivo-graphql/elastic"
 
 	ms "github.com/mitchellh/mapstructure"
 )
@@ -16,7 +17,7 @@ func personResolver(params graphql.ResolveParams) (interface{}, error) {
 	id := params.Args["id"].(string)
 	log.Printf("looking for person %s\n", id)
 
-	person, err := elastic.FindPerson(id)
+	person, err := FindPerson(id)
 	return person, err
 }
 
@@ -24,7 +25,7 @@ func publicationResolver(params graphql.ResolveParams) (interface{}, error) {
 	id := params.Args["id"].(string)
 	log.Printf("looking for publication %s\n", id)
 
-	person, err := elastic.FindPublication(id)
+	person, err := FindPublication(id)
 	return person, err
 }
 
@@ -32,7 +33,7 @@ func grantResolver(params graphql.ResolveParams) (interface{}, error) {
 	id := params.Args["id"].(string)
 	log.Printf("looking for grant %s\n", id)
 
-	person, err := elastic.FindGrant(id)
+	person, err := FindGrant(id)
 	return person, err
 }
 
@@ -101,7 +102,7 @@ func peopleResolver(params graphql.ResolveParams) (interface{}, error) {
 	}
 
 	fmt.Printf("limit=%v,offset=%v,query=%v\n", limit, offset, query)
-	personList, err := elastic.FindPeople(limit, offset, query)
+	personList, err := FindPeople(limit, offset, query)
 	return personList, err
 }
 
@@ -117,17 +118,17 @@ func publicationsResolver(params graphql.ResolveParams) (interface{}, error) {
 		query = fmt.Sprintf("*:%v*", filter.Filter.Query)
 	}
 
-	publications, err := elastic.FindPublications(limit, offset, query)
+	publications, err := FindPublications(limit, offset, query)
 	return publications, err
 }
 
 func personPublicationResolver(params graphql.ResolveParams) (interface{}, error) {
-	person, _ := params.Source.(ge.Person)
+	person, _ := params.Source.(Person)
 
 	limit := params.Args["limit"].(int)
 	offset := params.Args["offset"].(int)
 
-	publicationList, err := elastic.FindPersonPublications(person.Id, limit, offset)
+	publicationList, err := FindPersonPublications(person.Id, limit, offset)
 	return func() (interface{}, error) {
 		return &publicationList, err
 	}, nil
@@ -143,17 +144,17 @@ func grantsResolver(params graphql.ResolveParams) (interface{}, error) {
 		offset = filter.Filter.Offset
 		query = fmt.Sprintf("*:%v*", filter.Filter.Query)
 	}
-	grants, err := elastic.FindGrants(limit, offset, query)
+	grants, err := FindGrants(limit, offset, query)
 	return grants, err
 }
 
 func personGrantResolver(params graphql.ResolveParams) (interface{}, error) {
-	person, _ := params.Source.(ge.Person)
+	person, _ := params.Source.(Person)
 
 	limit := params.Args["limit"].(int)
 	offset := params.Args["offset"].(int)
 
-	grants, err := elastic.FindPersonGrants(person.Id, limit, offset)
+	grants, err := FindPersonGrants(person.Id, limit, offset)
 
 	return func() (interface{}, error) {
 		return &grants, err
