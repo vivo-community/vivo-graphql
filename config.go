@@ -1,9 +1,10 @@
 package vivographql
 
 type Config struct {
-	Elastic   elasticSearch `toml:"elastic"`
-	Graphql   graphqlServer `toml:"graphql"`
-	Templates templatePaths `toml:"template"`
+	Elastic elasticSearch `toml:"elastic"`
+	Graphql graphqlServer `toml:"graphql"`
+	Mapping mapping       `toml:"mapping"`
+	Schemas schemasPath   `toml:"schema"`
 }
 
 type elasticSearch struct {
@@ -12,6 +13,12 @@ type elasticSearch struct {
 
 type graphqlServer struct {
 	Port int
+}
+
+type mapping struct {
+	Templates templatePaths `toml:"templates"`
+	//Layout  string `toml:"templates_layout"`
+	//Include string `toml:"templates_include"`
 }
 
 type templatePaths struct {

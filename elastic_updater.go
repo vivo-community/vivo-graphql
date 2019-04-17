@@ -10,6 +10,7 @@ import (
 	"github.com/olivere/elastic"
 )
 
+// TODO: only accept Identifiable interface ?
 func addToIndex(index string, typeName string, id string, obj interface{}) {
 	ctx := context.Background()
 	client := GetElasticClient()
@@ -79,7 +80,7 @@ func partialUpdate(index string, typeName string, id string, prop string, obj in
 
 	switch {
 	case elastic.IsNotFound(err):
-		// NOTE: in theory we could add without source doc
+		// TODO: in theory we could add without source doc
 		fmt.Printf("no doc id=%s found to append to\n", id)
 		//fmt.Printf("ADDED %s to index %s, type %s\n", put1.Id, put1.Index, put1.Type)
 		return
@@ -247,7 +248,11 @@ func AddPeople(people ...string) {
 	for _, element := range people {
 		resource := Person{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		addToIndex("people", "person", resource.Id, resource)
 	}
 }
@@ -259,8 +264,11 @@ func AddAffiliationsToPeople(positions ...string) {
 	for _, element := range positions {
 		resource := Affiliation{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
-
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		collections[resource.PersonId] = append(collections[resource.PersonId], resource)
 	}
 
@@ -276,8 +284,11 @@ func AddEducationsToPeople(educations ...string) {
 	for _, element := range educations {
 		resource := Education{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
-
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		collections[resource.PersonId] = append(collections[resource.PersonId], resource)
 	}
 	for key, value := range collections {
@@ -289,8 +300,11 @@ func AddGrants(grants ...string) {
 	for _, element := range grants {
 		resource := Grant{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
-
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		addToIndex("grants", "grant", resource.Id, resource)
 	}
 }
@@ -299,8 +313,11 @@ func AddFundingRoles(fundingRoles ...string) {
 	for _, element := range fundingRoles {
 		resource := FundingRole{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
-
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		addToIndex("funding-roles", "funding-role", resource.Id, resource)
 	}
 }
@@ -310,8 +327,11 @@ func AddPublications(publications ...string) {
 	for _, element := range publications {
 		resource := Publication{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
-
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		addToIndex("publications", "publication", resource.Id, resource)
 	}
 }
@@ -320,8 +340,11 @@ func AddAuthorships(authorships ...string) {
 	for _, element := range authorships {
 		resource := Authorship{}
 		data := []byte(element)
-		json.Unmarshal(data, &resource)
-
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
 		addToIndex("authorships", "authorship", resource.Id, resource)
 	}
 }

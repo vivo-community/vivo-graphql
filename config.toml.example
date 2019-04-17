@@ -4,9 +4,9 @@ url = "http://localhost:9200"
 [graphql]
 port = 9001
 
-[template]
-layout = "schema-templates/layout/"
-include = "schema-templates/"
+[mapping]
+templates_layout = "mapping-templates/layout/"
+templates_include = "mapping-templates/"
 
 [schemas]
 dir = "json-schemas/"

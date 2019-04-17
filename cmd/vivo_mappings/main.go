@@ -42,16 +42,20 @@ func main() {
 		if exists {
 			viper.AddConfigPath(value)
 		}
-		viper.ReadInConfig()
-
+		err := viper.ReadInConfig()
+		if err != nil {
+			fmt.Printf("could not read config: %v\n", err)
+		}
 	} else {
 		replacer := strings.NewReplacer(".", "_")
 		viper.SetEnvKeyReplacer(replacer)
-		//viper.BindEnv("elastic.url")
-		//viper.BindEnv("graphql.port")
 
-		viper.BindEnv("templates.layout")
-		viper.BindEnv("templates.include")
+		// don't actually need these here
+		viper.BindEnv("elastic.url")
+		viper.BindEnv("graphql.port")
+
+		viper.BindEnv("mapping.templates.layout")
+		viper.BindEnv("mapping.templates.include")
 	}
 
 	if err := viper.Unmarshal(&conf); err != nil {
@@ -59,6 +63,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Printf("ELASTIC_URL=%s\n", conf.Elastic.Url)
+	fmt.Printf("GRAPHQL_PORT=%d\n", conf.Graphql.Port)
+
+	fmt.Printf("MAPPING_TEMPLATES_LAYOUT=%s\n", conf.Mapping.Templates.Layout)
+	fmt.Printf("MAPPING_TEMPLATES_INCLUDE=%s\n", conf.Mapping.Templates.Include)
 	/*
 		if err := vq.MakeElasticClient(conf.Elastic.Url); err != nil {
 			fmt.Printf("could not establish elastic client %s\n", err)

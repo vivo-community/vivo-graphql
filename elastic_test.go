@@ -14,6 +14,8 @@ import (
 )
 
 func TestElasticIdQuery(t *testing.T) {
+	// TODO: how to have test data but also
+	// persisted volume for dev ????
 	url := "http://localhost:9200"
 	if err := vq.MakeElasticClient(url); err != nil {
 		log.Printf("could not establish elastic client %s\n", err)

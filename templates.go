@@ -26,12 +26,12 @@ func LoadTemplates(conf Config) {
 		templates = make(map[string]*template.Template)
 	}
 
-	layoutFiles, err := filepath.Glob(conf.Templates.Layout + "*.tmpl")
+	layoutFiles, err := filepath.Glob(conf.Mapping.Templates.Layout + "*.tmpl")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	includeFiles, err := filepath.Glob(conf.Templates.Include + "*.tmpl")
+	includeFiles, err := filepath.Glob(conf.Mapping.Templates.Include + "*.tmpl")
 	if err != nil {
 		log.Fatal(err)
 	}
