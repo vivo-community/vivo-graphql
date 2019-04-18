@@ -2,6 +2,8 @@ package vivographql
 
 //https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
+	"fmt"
+
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
@@ -23,6 +25,29 @@ func MakeSchema() graphql.Schema {
 	})
 	return schema
 }
+
+// how to do something like this?
+//https://medium.com/@bradford_hamilton/building-an-api-with-graphql-and-go-9350df5c9356
+/*
+type Root struct {
+	Query *graphql.Object
+}
+
+type Resolver struct {
+	idx *Indexer
+}
+
+func NewRoot(indexer *Indexer) *Root {
+	resolver := Resolver{idx: indexer}
+	root := Root{Query: RootQuery}
+	return &root
+}
+
+func (r *Resolver) PersonResolver(p graphql.ResolveParams) (interface{}, error) {
+   // etc...
+}
+
+*/
 
 var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootQuery",
@@ -81,6 +106,8 @@ var GetPerson = &graphql.Field{
 		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 	},
 	// how to switch resolver based on config?  solr/elastic ?
+	// also how to get Resolver object into very Field?
+	//Resolve: resolver.PersonResolver
 	Resolve: personResolver,
 }
 
@@ -566,4 +593,31 @@ type PublicationList struct {
 type GrantList struct {
 	Results  []Grant  `json:"data"`
 	PageInfo PageInfo `json:"pageInfo"`
+}
+
+// A way to just call queries without the server (maybe?)
+// e.g.
+// schema := MakeSchema()
+// qry := `{
+//	publicationList {
+//	  results {
+//		id
+//		title
+//	  }
+//	 }
+// }`
+//
+// result := ExecuteQuery(qry, schema) ?
+func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
+	result := graphql.Do(graphql.Params{
+		Schema:        schema,
+		RequestString: query,
+	})
+
+	// Error check
+	if len(result.Errors) > 0 {
+		fmt.Printf("Unexpected errors inside ExecuteQuery: %v", result.Errors)
+	}
+
+	return result
 }

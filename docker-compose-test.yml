@@ -1,0 +1,24 @@
+version: "3"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
+    container_name: vq_elasticsearch_test
+    environment:
+      # likely need to change
+      - discovery.type=single-node
+    volumes:
+      # need to change ... right?
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      -vivoql_network_test
+
+networks:
+  vivoql_network_test:
+    driver: bridge
+
+volumes:
+  esdata:
+    driver: local
+

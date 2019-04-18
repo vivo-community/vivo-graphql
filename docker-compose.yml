@@ -32,7 +32,7 @@ services:
       - vivoql_network
     command: >
         bash -c "./build.sh
-        && ./cmd/vivograph/vivograph --serve"
+        && ./cmd/vivograph/vivograph"
 
 networks:
   vivoql_network:
