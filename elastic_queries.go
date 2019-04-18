@@ -3,19 +3,16 @@ package vivographql
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
 )
 
-// NOTE: these should all take a 'context' parameter
-func FindPerson(personId string) (Person, error) {
+func (indexer *ElasticIndexer) FindPerson(personId string) (Person, error) {
 	var person = Person{}
 
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	log.Printf("looking for person %s\n", personId)
 
@@ -31,11 +28,11 @@ func FindPerson(personId string) (Person, error) {
 	return person, err
 }
 
-func FindPublication(publicationId string) (Publication, error) {
+func (indexer *ElasticIndexer) FindPublication(publicationId string) (Publication, error) {
 	var publication = Publication{}
 
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	log.Printf("looking for publication %s\n", publicationId)
 
@@ -51,11 +48,11 @@ func FindPublication(publicationId string) (Publication, error) {
 	return publication, err
 }
 
-func FindGrant(grantId string) (Grant, error) {
+func (indexer *ElasticIndexer) FindGrant(grantId string) (Grant, error) {
 	var grant = Grant{}
 
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	log.Printf("looking for grant %s\n", grantId)
 
@@ -107,10 +104,10 @@ func parsePeopleAggregations(facets elastic.Aggregations) *PeopleFacets {
 	return peopleFacets
 }
 
-func FindPeople(limit int, offset int, query string) (PersonList, error) {
+func (indexer *ElasticIndexer) FindPeople(limit int, offset int, query string) (PersonList, error) {
 	var people []Person
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	q := elastic.NewQueryStringQuery(query)
 	log.Println("looking for people")
@@ -168,11 +165,11 @@ func FindPeople(limit int, offset int, query string) (PersonList, error) {
 	return personList, err
 }
 
-func FindPublications(limit int, offset int, query string) (PublicationList, error) {
+func (indexer *ElasticIndexer) FindPublications(limit int, offset int, query string) (PublicationList, error) {
 	var publications []Publication
 	ctx := context.Background()
 	// should query elastic here
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	//q := elastic.NewMatchAllQuery()
 	q := elastic.NewQueryStringQuery(query)
@@ -226,12 +223,12 @@ func FindPublications(limit int, offset int, query string) (PublicationList, err
 	//return publications, err
 }
 
-func FindPersonPublications(personId string, limit int, offset int) (PublicationList, error) {
+func (indexer *ElasticIndexer) FindPersonPublications(personId string, limit int, offset int) (PublicationList, error) {
 	var publications []Publication
 	var publicationIds []string
 
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	q := elastic.NewMatchQuery("personId", personId)
 
@@ -299,10 +296,10 @@ func FindPersonPublications(personId string, limit int, offset int) (Publication
 	return publicationList, err
 }
 
-func FindGrants(limit int, offset int, query string) (GrantList, error) {
+func (indexer *ElasticIndexer) FindGrants(limit int, offset int, query string) (GrantList, error) {
 	var grants []Grant
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	//q := elastic.NewMatchAllQuery()
 	q := elastic.NewQueryStringQuery(query)
@@ -340,12 +337,12 @@ func FindGrants(limit int, offset int, query string) (GrantList, error) {
 	return grantList, err
 }
 
-func FindPersonGrants(personId string, limit int, offset int) (GrantList, error) {
+func (indexer *ElasticIndexer) FindPersonGrants(personId string, limit int, offset int) (GrantList, error) {
 	var grants []Grant
 	var grantIds []string
 
 	ctx := context.Background()
-	client := GetElasticClient()
+	client := indexer.GetClient()
 
 	q := elastic.NewMatchQuery("personId", personId)
 
@@ -405,6 +402,7 @@ func FindPersonGrants(personId string, limit int, offset int) (GrantList, error)
 }
 
 // remaining are just debug/util functions
+/*
 func ListAll(index string) {
 	ctx := context.Background()
 	client := GetElasticClient()
@@ -497,3 +495,4 @@ func FindOne(index string, personId string) {
 	}
 	spew.Printf("%v\n", obj)
 }
+*/

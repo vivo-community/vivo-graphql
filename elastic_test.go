@@ -14,8 +14,9 @@ import (
 )
 
 // TODO: add some reference data here?
-
-// func TestMain()
+// func TestMain() {
+// could make a docker-compose-test.yml
+//}
 func TestElasticIdQuery(t *testing.T) {
 	// TODO: how to have test data but also
 	// persisted volume for dev ????

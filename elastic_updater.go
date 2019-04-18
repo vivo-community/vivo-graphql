@@ -11,9 +11,13 @@ import (
 )
 
 // TODO: only accept Identifiable interface ?
+// also - should maybe be added to Indexer interface ???
+// also send in context ??
 func addToIndex(index string, typeName string, id string, obj interface{}) {
 	ctx := context.Background()
-	client := GetElasticClient()
+
+	engine := GetElasticIndexer()
+	client := engine.GetClient()
 
 	get1, err := client.Get().
 		Index(index).
@@ -70,7 +74,9 @@ func addToIndex(index string, typeName string, id string, obj interface{}) {
 
 func partialUpdate(index string, typeName string, id string, prop string, obj interface{}) {
 	ctx := context.Background()
-	client := GetElasticClient()
+
+	engine := GetElasticIndexer()
+	client := engine.GetClient()
 
 	get1, err := client.Get().
 		Index(index).
@@ -121,7 +127,8 @@ func partialUpdate(index string, typeName string, id string, prop string, obj in
 func clearIndex(name string) {
 	ctx := context.Background()
 
-	client := GetElasticClient()
+	engine := GetElasticIndexer()
+	client := engine.GetClient()
 
 	deleteIndex, err := client.DeleteIndex(name).Do(ctx)
 	if err != nil {
@@ -195,7 +202,8 @@ func GrantMapping() (string, error) {
 func makeIndex(name string, mappingJson string) {
 	ctx := context.Background()
 
-	client := GetElasticClient()
+	engine := GetElasticIndexer()
+	client := engine.GetClient()
 
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := client.IndexExists(name).Do(ctx)

@@ -41,6 +41,7 @@ var GetPerson = &graphql.Field{
 	Args: graphql.FieldConfigArgument{
 		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 	},
+	// how to switch resolver based on config?  solr/elastic ?
 	Resolve: personResolver,
 }
 

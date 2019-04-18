@@ -6,18 +6,38 @@ import (
 	"github.com/olivere/elastic"
 )
 
-//https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
+var elasticClient *elastic.Client
 
-//ge "github.com/OIT-ads-web/graphql_endpoint"
-//"github.com/davecgh/go-spew/spew"
-
-var ElasticClient *elastic.Client
-
-func GetElasticClient() *elastic.Client {
-	return ElasticClient
+func getElasticClient() *elastic.Client {
+	return elasticClient
 }
 
-func MakeElasticClient(url string) error {
+var elasticIndexer *ElasticIndexer
+
+type ElasticIndexer struct {
+	/// empty ??
+}
+
+func GetElasticIndexer() *ElasticIndexer {
+	return elasticIndexer
+}
+
+func (indexer *ElasticIndexer) GetName() interface{} {
+	return "Elastic"
+}
+
+func (indexer *ElasticIndexer) GetClient() *elastic.Client {
+	return getElasticClient()
+}
+
+// ??
+func EstablishElasticIndexer(url string) error {
+	// debug or not debug version config
+	return makeElasticClient(url)
+	// indexer = ElasticIndexer{ -- ?}
+}
+
+func makeElasticClient(url string) error {
 	// establishing a 'global' client
 	client, err := elastic.NewClient(elastic.SetURL(url),
 		elastic.SetSniff(false))
@@ -25,11 +45,11 @@ func MakeElasticClient(url string) error {
 	// NOTE: this is establishing a global client because the elastic client is
 	// supposed to be long-lived
 	// see https://github.com/olivere/elastic/blob/release-branch.v6/client.go
-	ElasticClient = client
+	elasticClient = client
 	return err
 }
 
-func MakeElasticClientDebug(url string, httpClient *http.Client) error {
+func makeElasticClientDebug(url string, httpClient *http.Client) error {
 	// establishing a 'global' client
 	client, err := elastic.NewClient(elastic.SetURL(url),
 		elastic.SetSniff(false),
@@ -38,6 +58,6 @@ func MakeElasticClientDebug(url string, httpClient *http.Client) error {
 	// NOTE: this is establishing a global client because the elastic client is
 	// supposed to be long-lived
 	// see https://github.com/olivere/elastic/blob/release-branch.v6/client.go
-	ElasticClient = client
+	elasticClient = client
 	return err
 }

@@ -13,11 +13,15 @@ import (
 	ms "github.com/mitchellh/mapstructure"
 )
 
+// TODO: way to switch indexer engine based on config ???
 func personResolver(params graphql.ResolveParams) (interface{}, error) {
 	id := params.Args["id"].(string)
 	log.Printf("looking for person %s\n", id)
 
-	person, err := FindPerson(id)
+	// TODO: this would need to switch based on something
+	engine := GetElasticIndexer()
+	person, err := engine.FindPerson(id)
+	//person, err := FindPerson(id)
 	return person, err
 }
 
@@ -25,7 +29,8 @@ func publicationResolver(params graphql.ResolveParams) (interface{}, error) {
 	id := params.Args["id"].(string)
 	log.Printf("looking for publication %s\n", id)
 
-	person, err := FindPublication(id)
+	engine := GetElasticIndexer()
+	person, err := engine.FindPublication(id)
 	return person, err
 }
 
@@ -33,7 +38,8 @@ func grantResolver(params graphql.ResolveParams) (interface{}, error) {
 	id := params.Args["id"].(string)
 	log.Printf("looking for grant %s\n", id)
 
-	person, err := FindGrant(id)
+	engine := GetElasticIndexer()
+	person, err := engine.FindGrant(id)
 	return person, err
 }
 
@@ -102,7 +108,9 @@ func peopleResolver(params graphql.ResolveParams) (interface{}, error) {
 	}
 
 	fmt.Printf("limit=%v,offset=%v,query=%v\n", limit, offset, query)
-	personList, err := FindPeople(limit, offset, query)
+
+	engine := GetElasticIndexer()
+	personList, err := engine.FindPeople(limit, offset, query)
 	return personList, err
 }
 
@@ -118,7 +126,8 @@ func publicationsResolver(params graphql.ResolveParams) (interface{}, error) {
 		query = fmt.Sprintf("*:%v*", filter.Filter.Query)
 	}
 
-	publications, err := FindPublications(limit, offset, query)
+	engine := GetElasticIndexer()
+	publications, err := engine.FindPublications(limit, offset, query)
 	return publications, err
 }
 
@@ -128,7 +137,8 @@ func personPublicationResolver(params graphql.ResolveParams) (interface{}, error
 	limit := params.Args["limit"].(int)
 	offset := params.Args["offset"].(int)
 
-	publicationList, err := FindPersonPublications(person.Id, limit, offset)
+	engine := GetElasticIndexer()
+	publicationList, err := engine.FindPersonPublications(person.Id, limit, offset)
 	return func() (interface{}, error) {
 		return &publicationList, err
 	}, nil
@@ -144,7 +154,8 @@ func grantsResolver(params graphql.ResolveParams) (interface{}, error) {
 		offset = filter.Filter.Offset
 		query = fmt.Sprintf("*:%v*", filter.Filter.Query)
 	}
-	grants, err := FindGrants(limit, offset, query)
+	engine := GetElasticIndexer()
+	grants, err := engine.FindGrants(limit, offset, query)
 	return grants, err
 }
 
@@ -154,7 +165,8 @@ func personGrantResolver(params graphql.ResolveParams) (interface{}, error) {
 	limit := params.Args["limit"].(int)
 	offset := params.Args["offset"].(int)
 
-	grants, err := FindPersonGrants(person.Id, limit, offset)
+	engine := GetElasticIndexer()
+	grants, err := engine.FindPersonGrants(person.Id, limit, offset)
 
 	return func() (interface{}, error) {
 		return &grants, err
