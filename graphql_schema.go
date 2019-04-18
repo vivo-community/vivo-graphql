@@ -40,6 +40,24 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootMutation",
 	Fields: graphql.Fields{
 		"createPerson": CreatePerson,
+		//"createGrant": CreateGrant,
+		//"createPublication": CreatePublication,
+		// https://github.com/graphql-go/graphql/issues/234
+		//"addAffilition": AddAffilition,
+		//"addEducation": AddEducation,
+		//"createCourse": CreateCourse,
+		// etc...
+	},
+})
+
+// TODO: probably need a complex input type e.g.
+var PersonInput *graphql.InputObject = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name:        "PersonInput",
+	Description: "Person to Add/Update",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"id": &graphql.InputObjectFieldConfig{
+			Type: graphql.String,
+		},
 	},
 })
 
@@ -49,6 +67,10 @@ var CreatePerson = &graphql.Field{
 		// TODO: all fields here?
 		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 	},
+	// TODO: maybe something like this? not sure
+	//Args: graphql.FieldConfigArgument{
+	//	"person": &graphql.ArgumentConfig{Type: PersonInput},
+	//},
 	Resolve: personMutation,
 }
 

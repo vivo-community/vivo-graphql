@@ -1,6 +1,10 @@
 package vivographql
 
-import "github.com/graphql-go/graphql"
+import (
+	"errors"
+
+	"github.com/graphql-go/graphql"
+)
 
 // TODO: much more to do here
 func personMutation(params graphql.ResolveParams) (interface{}, error) {
@@ -12,6 +16,12 @@ func personMutation(params graphql.ResolveParams) (interface{}, error) {
 	newPerson := &Person{
 		Id: id,
 	}
+	err := errors.New("not implemented")
+	// do something like this:
 	// indexer.SavePerson(newPerson)
-	return newPerson, nil
+
+	// this might make it async
+	return func() (interface{}, error) {
+		return &newPerson, err
+	}, nil
 }
