@@ -9,6 +9,7 @@ type Config struct {
 
 type elasticSearch struct {
 	Url string
+	// TestUrl (url for tests ...???)
 }
 
 type graphqlServer struct {

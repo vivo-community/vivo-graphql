@@ -13,9 +13,13 @@ import (
 	vq "github.com/vivo-community/vivo-graphql"
 )
 
+// TODO: add some reference data here?
+
+// func TestMain()
 func TestElasticIdQuery(t *testing.T) {
 	// TODO: how to have test data but also
 	// persisted volume for dev ????
+	// always localhost? - instead of config
 	url := "http://localhost:9200"
 	if err := vq.MakeElasticClient(url); err != nil {
 		log.Printf("could not establish elastic client %s\n", err)

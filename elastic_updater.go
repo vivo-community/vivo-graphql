@@ -244,7 +244,12 @@ func MakeAuthorshipsIndex(mapping string) {
 // func AddResources(resources ...Identifiable) {
 //	// how to make new Person{} each loop
 //}
-func AddPeople(people ...string) {
+
+// maybe gather first
+func GatherPeople(people ...string) []Person {
+	// TODO: should probably read into array instead
+	// of one at a time
+	results := make([]Person, len(people))
 	for _, element := range people {
 		resource := Person{}
 		data := []byte(element)
@@ -253,7 +258,15 @@ func AddPeople(people ...string) {
 			fmt.Printf("rpoblem with %v:%#v\n", element, err)
 			continue
 		}
-		addToIndex("people", "person", resource.Id, resource)
+		results = append(results, resource)
+	}
+	return results
+}
+
+func AddPeople(people ...Person) {
+	// TODO: batch up ???
+	for _, element := range people {
+		addToIndex("people", "person", element.Id, element)
 	}
 }
 
