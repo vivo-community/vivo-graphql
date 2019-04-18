@@ -1,6 +1,5 @@
 .tool-versions
 .envrc
 *.toml
-cmd/vivo_mappings/vivo_mappings
-cmd/vivoql/vivoql
+cmd/vivograph/vivograph
 .vscode

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +15,21 @@ import (
 
 var conf vq.Config
 
+func outputSchemas() {
+	// TODO: this is only one, and doesn't allow you to point
+	// to where they are generated
+	mapping, err := vq.PersonMapping()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = ioutil.WriteFile("person-mapping.json", []byte(mapping), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// flag for -serve (server)
 func main() {
 	log.SetOutput(os.Stdout)
 
@@ -49,6 +65,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	// TODO:
+	// if mappings ...
+	// 	vq.LoadTemplates(conf)
+	//  outputSchemas( --- >)
+	// if -serve ...
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
 	})

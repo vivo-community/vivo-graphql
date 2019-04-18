@@ -1,5 +1,8 @@
 package vivographql
 
+/* NOTE: this is just for mapping-templates - not templates in general
+should probably not name it 'templates.go'
+*/
 import (
 	"errors"
 	"fmt"

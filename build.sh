@@ -1,9 +1,7 @@
 #!/bin/sh
 
-cd cmd/vivoql
+cd cmd/vivograph
 go build
 cd ../../
-cd cmd/vivo_mappings
-go build
-cd ../../
+
 
