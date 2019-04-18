@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -16,20 +15,6 @@ import (
 )
 
 var conf vq.Config
-
-func outputSchemas() {
-	// TODO: this is only one, and doesn't allow you to point
-	// to where they are generated
-	mapping, err := vq.PersonMapping()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = ioutil.WriteFile("person-mapping.json", []byte(mapping), 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func main() {
 	log.SetOutput(os.Stdout)
@@ -58,9 +43,6 @@ func main() {
 		viper.BindEnv("graphql.port")
 	}
 
-	serve := flag.Bool("serve", true, "whether to run server (--serve=true)")
-	mappings := flag.Bool("mappings", false, "whether to generate elastic mapping files")
-
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 	// check for err?
@@ -77,34 +59,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	/*
-		if err := vq.MakeElasticClient(conf.Elastic.Url); err != nil {
-			fmt.Printf("could not establish elastic client %s\n", err)
-			os.Exit(1)
-		}
-	*/
+	vq.LoadSchemas(conf)
 
-	// TODO: should say which mappings, output etc...
-	if *mappings {
-		vq.LoadTemplates(conf)
-		outputSchemas()
-	}
+	c := cors.New(cors.Options{
+		AllowCredentials: true,
+	})
 
-	// TODO: graceful shutdown etc..
-	if *serve {
-		c := cors.New(cors.Options{
-			AllowCredentials: true,
-		})
+	handler := vq.MakeHandler()
+	http.Handle("/graphql", c.Handler(handler))
 
-		handler := vq.MakeHandler()
-		http.Handle("/graphql", c.Handler(handler))
-
-		port := conf.Graphql.Port
-		portConfig := fmt.Sprintf(":%d", port)
-		err := http.ListenAndServe(portConfig, nil)
-		if err != nil {
-			fmt.Printf("server start error: %v\n", err)
-		}
+	port := conf.Graphql.Port
+	portConfig := fmt.Sprintf(":%d", port)
+	err := http.ListenAndServe(portConfig, nil)
+	if err != nil {
+		fmt.Printf("server start error: %v\n", err)
 	}
 
 }

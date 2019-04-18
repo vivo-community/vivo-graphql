@@ -18,7 +18,8 @@ func MakeHandler() *handler.Handler {
 
 func MakeSchema() graphql.Schema {
 	var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
-		Query: RootQuery,
+		Query:    RootQuery,
+		Mutation: RootMutation,
 	})
 	return schema
 }
@@ -34,6 +35,22 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 		"grantList":       GetGrants,
 	},
 })
+
+var RootMutation = graphql.NewObject(graphql.ObjectConfig{
+	Name: "RootMutation",
+	Fields: graphql.Fields{
+		"createPerson": CreatePerson,
+	},
+})
+
+var CreatePerson = &graphql.Field{
+	Type: person, // the return type for this field
+	Args: graphql.FieldConfigArgument{
+		// TODO: all fields here?
+		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+	},
+	Resolve: personMutation,
+}
 
 var GetPerson = &graphql.Field{
 	Type:        person,

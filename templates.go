@@ -24,7 +24,7 @@ func Preview(tmpl string) {
 
 // NOTE: stole code from here:
 //https://hackernoon.com/golang-template-2-template-composition-and-how-to-organize-template-files-4cb40bcdf8f6
-func LoadTemplates(conf Config) {
+func LoadMappingTemplates(conf Config) {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
