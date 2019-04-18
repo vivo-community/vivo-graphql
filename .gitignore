@@ -2,4 +2,5 @@
 .envrc
 *.toml
 cmd/vivograph/vivograph
+cmd/vivograph-cli/vivograph-cli
 .vscode
