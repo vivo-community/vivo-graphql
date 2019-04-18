@@ -13,24 +13,26 @@ import (
 // TODO: only accept Identifiable interface ?
 // also - should maybe be added to Indexer interface ???
 // also send in context ??
-func addToIndex(index string, typeName string, id string, obj interface{}) {
+func (engine *ElasticIndexer) addToIndex(index string, obj Identifiable) {
+
+	//func (engine *ElasticIndexer) addToIndex(index string, typeName string, id string, obj interface{}) {
 	ctx := context.Background()
 
-	engine := GetElasticIndexer()
+	//engine := GetElasticIndexer()
 	client := engine.GetClient()
 
 	get1, err := client.Get().
 		Index(index).
-		Type(typeName).
-		Id(id).
+		Type(obj.TypeName()).
+		Id(obj.ID()).
 		Do(ctx)
 
 	switch {
 	case elastic.IsNotFound(err):
 		put1, err := client.Index().
 			Index(index).
-			Type(typeName).
-			Id(id).
+			Type(obj.TypeName()).
+			Id(obj.ID()).
 			BodyJson(obj).
 			Do(ctx)
 
@@ -53,8 +55,8 @@ func addToIndex(index string, typeName string, id string, obj interface{}) {
 		update1, err := client.Update().
 			RetryOnConflict(2).
 			Index(index).
-			Type(typeName).
-			Id(id).
+			Type(obj.TypeName()).
+			Id(obj.ID()).
 			Doc(obj).
 			Do(ctx)
 
@@ -72,10 +74,16 @@ func addToIndex(index string, typeName string, id string, obj interface{}) {
 	spew.Println(obj)
 }
 
-func partialUpdate(index string, typeName string, id string, prop string, obj interface{}) {
+// Identifiable ...? context ???
+// TODO: make it more clear what parameters mean, maybe make part of it use Identifiable
+// interface (but of Parent object)
+// just to be able to use this:
+// Type(parent.TypeName()).
+// Id(parent.ID()).
+func (engine *ElasticIndexer) partialUpdate(index string, typeName string, id string, prop string, obj interface{}) {
 	ctx := context.Background()
 
-	engine := GetElasticIndexer()
+	//engine := GetElasticIndexer()
 	client := engine.GetClient()
 
 	get1, err := client.Get().
@@ -124,10 +132,10 @@ func partialUpdate(index string, typeName string, id string, prop string, obj in
 	spew.Println(obj)
 }
 
-func clearIndex(name string) {
+func (engine *ElasticIndexer) clearIndex(name string) {
 	ctx := context.Background()
 
-	engine := GetElasticIndexer()
+	//engine := GetElasticIndexer()
 	client := engine.GetClient()
 
 	deleteIndex, err := client.DeleteIndex(name).Do(ctx)
@@ -144,31 +152,31 @@ func clearIndex(name string) {
 }
 
 /*
-func ClearPeopleIndex() {
+func (engine *ElasticIndexer) ClearPeopleIndex() {
 	clearIndex("people")
 }
 
-func ClearAffiliationsIndex() {
+func (engine *ElasticIndexer) ClearAffiliationsIndex() {
 	clearIndex("affiliations")
 }
 
-func ClearEducationsIndex() {
+func (engine *ElasticIndexer) ClearEducationsIndex() {
 	clearIndex("educations")
 }
 
-func ClearGrantsIndex() {
+func (engine *ElasticIndexer) ClearGrantsIndex() {
 	clearIndex("grants")
 }
 
-func ClearFundingRolesIndex() {
+func (engine *ElasticIndexer) ClearFundingRolesIndex() {
 	clearIndex("funding-roles")
 }
 
-func ClearPublicationsIndex() {
+func (engine *ElasticIndexer) ClearPublicationsIndex() {
 	clearIndex("publications")
 }
 
-func ClearAuthorshipsIndex() {
+func (engine *ElasticIndexer) ClearAuthorshipsIndex() {
 	clearIndex("authorships")
 }
 
@@ -199,10 +207,10 @@ func GrantMapping() (string, error) {
 }
 
 // NOTE: 'mappingJson' is just a json string plugged into template
-func makeIndex(name string, mappingJson string) {
+func (engine *ElasticIndexer) makeIndex(name string, mappingJson string) {
 	ctx := context.Background()
 
-	engine := GetElasticIndexer()
+	//engine := GetElasticIndexer()
 	client := engine.GetClient()
 
 	// Use the IndexExists service to check if a specified index exists.
@@ -225,6 +233,10 @@ func makeIndex(name string, mappingJson string) {
 }
 
 /*
+
+not sure whether to add these to interface or not
+does solr have same idea of 'index' e.g. 'core' ?
+
 func MakePeopleIndex(mapping string) {
 	makeIndex("people", mapping)
 }
@@ -253,7 +265,12 @@ func MakeAuthorshipsIndex(mapping string) {
 //	// how to make new Person{} each loop
 //}
 
-// maybe gather first
+// maybe gather first - array of string is probably wrong param
+// maybe just (json string)
+// TODO: 1) not sure these should be public methods
+//       2) whether they will be used
+//       3) maybe rename Parse or something - could be outside
+//          of 'elastic' area entirely
 func GatherPeople(people ...string) []Person {
 	// TODO: should probably read into array instead
 	// of one at a time
@@ -271,15 +288,15 @@ func GatherPeople(people ...string) []Person {
 	return results
 }
 
-func AddPeople(people ...Person) {
+// elastic indexer is a global object
+func (indexer *ElasticIndexer) AddPeople(people ...Person) {
 	// TODO: batch up ???
 	for _, element := range people {
-		addToIndex("people", "person", element.Id, element)
+		indexer.addToIndex("people", element)
 	}
 }
 
-func AddAffiliationsToPeople(positions ...string) {
-	// need to group by personId
+func GatherAffiliations(positions ...string) map[string][]Affiliation {
 	collections := make(map[string][]Affiliation)
 
 	for _, element := range positions {
@@ -287,19 +304,22 @@ func AddAffiliationsToPeople(positions ...string) {
 		data := []byte(element)
 		err := json.Unmarshal(data, &resource)
 		if err != nil {
-			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			fmt.Printf("problem with %v:%#v\n", element, err)
 			continue
 		}
 		collections[resource.PersonId] = append(collections[resource.PersonId], resource)
 	}
+	return collections
+}
 
+// way to do equivalent of ...
+func (indexer *ElasticIndexer) AddAffiliationsToPeople(collections map[string][]Affiliation) {
 	for key, value := range collections {
-		partialUpdate("people", "person", key, "affiliationList", value)
+		indexer.partialUpdate("people", "person", key, "affiliationList", value)
 	}
 }
 
-func AddEducationsToPeople(educations ...string) {
-	// need to group by personId
+func GatherEducations(educations ...string) map[string][]Education {
 	collections := make(map[string][]Education)
 
 	for _, element := range educations {
@@ -307,65 +327,101 @@ func AddEducationsToPeople(educations ...string) {
 		data := []byte(element)
 		err := json.Unmarshal(data, &resource)
 		if err != nil {
-			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			fmt.Printf("problem with %v:%#v\n", element, err)
 			continue
 		}
 		collections[resource.PersonId] = append(collections[resource.PersonId], resource)
 	}
+	return collections
+}
+
+func (indexer *ElasticIndexer) AddEducationsToPeople(collections map[string][]Education) {
 	for key, value := range collections {
-		partialUpdate("people", "person", key, "educationList", value)
+		indexer.partialUpdate("people", "person", key, "educationList", value)
 	}
 }
 
-func AddGrants(grants ...string) {
+func GatherGrants(grants ...string) []Grant {
+	results := make([]Grant, len(grants))
 	for _, element := range grants {
 		resource := Grant{}
 		data := []byte(element)
 		err := json.Unmarshal(data, &resource)
 		if err != nil {
-			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			fmt.Printf("problem with %v:%#v\n", element, err)
 			continue
 		}
-		addToIndex("grants", "grant", resource.Id, resource)
+		results = append(results, resource)
+	}
+	return results
+}
+
+func (indexer *ElasticIndexer) AddGrants(grants ...Grant) {
+	for _, element := range grants {
+		indexer.addToIndex("grants", element)
 	}
 }
 
-func AddFundingRoles(fundingRoles ...string) {
-	for _, element := range fundingRoles {
+func GatherFundingRoles(roles ...string) []FundingRole {
+	results := make([]FundingRole, len(roles))
+	for _, element := range roles {
 		resource := FundingRole{}
 		data := []byte(element)
 		err := json.Unmarshal(data, &resource)
 		if err != nil {
-			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			fmt.Printf("problem with %v:%#v\n", element, err)
 			continue
 		}
-		addToIndex("funding-roles", "funding-role", resource.Id, resource)
+		results = append(results, resource)
+	}
+	return results
+}
+
+func (indexer *ElasticIndexer) AddFundingRoles(roles ...FundingRole) {
+	for _, element := range roles {
+		indexer.addToIndex("funding-roles", element)
 	}
 }
 
-// need at least an id
-func AddPublications(publications ...string) {
+func GatherPublications(publications ...string) []Publication {
+	results := make([]Publication, len(publications))
 	for _, element := range publications {
 		resource := Publication{}
 		data := []byte(element)
 		err := json.Unmarshal(data, &resource)
 		if err != nil {
-			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			fmt.Printf("problem with %v:%#v\n", element, err)
 			continue
 		}
-		addToIndex("publications", "publication", resource.Id, resource)
+		results = append(results, resource)
+	}
+	return results
+}
+
+// need at least an id
+func (indexer *ElasticIndexer) AddPublications(publications ...Publication) {
+	for _, element := range publications {
+		indexer.addToIndex("publications", element)
 	}
 }
 
-func AddAuthorships(authorships ...string) {
+func GatherAuthorships(authorships ...string) []Authorship {
+	results := make([]Authorship, len(authorships))
 	for _, element := range authorships {
 		resource := Authorship{}
 		data := []byte(element)
 		err := json.Unmarshal(data, &resource)
 		if err != nil {
-			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			fmt.Printf("problem with %v:%#v\n", element, err)
 			continue
 		}
-		addToIndex("authorships", "authorship", resource.Id, resource)
+		results = append(results, resource)
+	}
+	return results
+}
+
+func (indexer *ElasticIndexer) AddAuthorships(authorships ...Authorship) {
+	for _, element := range authorships {
+		indexer.addToIndex("authorships", element)
 	}
 }

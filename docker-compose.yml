@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
@@ -19,7 +19,7 @@ services:
     networks:
       -vivoql_network
   gographql:
-    image: golang:1.11.1
+    image: golang:1.12.1
     working_dir: /app
     ports:
       - "9001:9001"

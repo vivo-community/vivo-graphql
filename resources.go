@@ -1,8 +1,10 @@
 package vivographql
 
 type Identifiable interface {
-	ID() string
-	TypeName() string
+	ID() string       // just called ID to avoid conflict with Id
+	TypeName() string // TODO: not sure lowercase or uppercase is better
+	// IndexName() string ???
+	// URI() string
 }
 
 // these are elastic json models
@@ -61,6 +63,10 @@ func (s ServiceRole) ID() string {
 	return s.Id
 }
 
+func (s ServiceRole) TypeName() string {
+	return "professional-service" // FIXME: ?? not sure
+}
+
 type Email struct {
 	Label string `json:"label"`
 	Type  Type   `json:"type" elastic:"type:object"`
@@ -102,6 +108,14 @@ type CourseTaught struct {
 	Organization Organization   `json:"organization" elastic:"type:object"`
 }
 
+func (c CourseTaught) ID() string {
+	return c.Id
+}
+
+func (c CourseTaught) TypeName() string {
+	return "course"
+}
+
 type Extension struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -126,6 +140,14 @@ type Person struct {
 	AffliationList   []Affiliation    `json:"affiliationList" elastic:"type:nested"`
 }
 
+func (p Person) ID() string {
+	return p.Id
+}
+
+func (p Person) TypeName() string {
+	return "person"
+}
+
 type DateResolution struct {
 	DateTime   string `json:"dateTime"`
 	Resolution string `json:"resolution"`
@@ -137,6 +159,16 @@ type Organization struct {
 	Label string `json:"label"`
 }
 
+func (o Organization) ID() string {
+	return o.Id
+}
+
+func (o Organization) TypeName() string {
+	return "organization"
+}
+
+// TODO: since this is partialUpdate, maybe it doesn't
+// have an Id
 type Affiliation struct {
 	Id           string         `json:"id"`
 	Uri          string         `json:"uri"`
@@ -146,6 +178,16 @@ type Affiliation struct {
 	Organization Organization   `json:"organization"`
 }
 
+func (a Affiliation) ID() string {
+	return a.Id
+}
+
+func (a Affiliation) TypeName() string {
+	return "affiliation"
+}
+
+// TODO: since this is partialUpdate, maybe it doesn't
+// have an Id
 type Education struct {
 	Id                     string         `json:"id"`
 	Uri                    string         `json:"uri"`
@@ -156,12 +198,28 @@ type Education struct {
 	Organization           Organization   `json:"organization" elastic:"type:object"`
 }
 
+func (e Education) ID() string {
+	return e.Id
+}
+
+func (e Education) TypeName() string {
+	return "education"
+}
+
 type FundingRole struct {
 	Id       string `json:"id"`
 	Uri      string `json:"uri"`
 	GrantId  string `json:"grantId"`
 	PersonId string `json:"personId"`
 	Label    string `json:"label"`
+}
+
+func (r FundingRole) ID() string {
+	return r.Id
+}
+
+func (r FundingRole) TypeName() string {
+	return "fundingRole"
 }
 
 type Grant struct {
@@ -172,12 +230,28 @@ type Grant struct {
 	EndDate   DateResolution `json:"endDate"`
 }
 
+func (g Grant) ID() string {
+	return g.Id
+}
+
+func (g Grant) TypeName() string {
+	return "grant"
+}
+
 type Authorship struct {
 	Id            string `json:"id"`
 	Uri           string `json:"uri"`
 	PublicationId string `json:"publicationId"`
 	PersonId      string `json:"personId"`
 	Label         string `json:"label"`
+}
+
+func (a Authorship) ID() string {
+	return a.Id
+}
+
+func (a Authorship) TypeName() string {
+	return "authorship"
 }
 
 type PublicationVenue struct {
@@ -217,4 +291,12 @@ type Publication struct {
 	Volume           string                `json:"volume"`
 	Issue            string                `json:"issue"`
 	KeywordList      []PublicationKeyword  `json:"keywordList" elastic:"type:nested"`
+}
+
+func (p Publication) ID() string {
+	return p.Id
+}
+
+func (p Publication) TypeName() string {
+	return "publication"
 }

@@ -12,7 +12,15 @@ type IndexEngine interface {
 	FindGrants(limit int, offset int, query string) (GrantList, error)
 	FindPersonGrants(personId string, limit int, offset int) (GrantList, error)
 
-	//AddPeople(people ...Person) error or errors or validation results ...
+	// mutations - or adding records at least
+	AddPeople(people ...Person)
+	// note these seem to be better was partial updates to person
+	AddAffiliationsToPeople(collection map[string][]Affiliation)
+	AddEducationsToPeople(collection map[string][]Affiliation)
+	AddGrants(grants ...Grant)
+	AddFundingRoles(fundingRoles ...FundingRole)
+	AddPublications(publications ...Publication)
+	AddAuthorships(authorships ...Authorship)
 }
 
 // will be different per index engine
@@ -20,12 +28,17 @@ type Indexer interface {
 	GetClient() interface{}
 }
 
-// if conf.Elastic {
+// would (long term) need some mechanism for choosing index
+// engine at start up maybe:
 /*
-if err := vq.EstablishElasticIndexer(conf.Elastic.Url); err != nil {
-	fmt.Printf("could not establish elastic client %s\n", err)
-	os.Exit(1)
-} else if conf.Solr {
-panic("solr engine non-functional")
+if conf.Elastic {
+        if err := vq.EstablishElasticIndexer(conf.Elastic.Url); err != nil {
+	        fmt.Printf("could not establish elastic client %s\n", err)
+	        os.Exit(1)
+	    }
+    } else if conf.Solr {
+        panic("solr engine non-functional")
+    }
 }
+
 */
