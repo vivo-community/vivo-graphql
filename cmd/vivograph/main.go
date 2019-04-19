@@ -59,13 +59,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	vq.LoadSchemas(conf)
+	// e.g. json validation schemas
+	vq.LoadJsonSchemas(conf)
 
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
 	})
 
-	handler := vq.MakeHandler()
+	handler := vq.MakeGraphqlHandler()
+	// add Graphql handler - could make other handlers here too
 	http.Handle("/graphql", c.Handler(handler))
 
 	port := conf.Graphql.Port

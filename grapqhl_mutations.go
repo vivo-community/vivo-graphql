@@ -38,10 +38,9 @@ func personValidation(params graphql.ResolveParams) (interface{}, error) {
 		Id: id,
 	}
 
-	schema := RetrieveSchema("person")
+	schema := RetrieveJsonSchema("person")
 	b, err := json.Marshal(newPerson)
 
-	// NOTE: this is only true/false now
 	valid, errList := Validate(schema, string(b))
 
 	if !valid {

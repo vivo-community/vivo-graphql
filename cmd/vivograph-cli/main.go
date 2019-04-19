@@ -74,7 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	vq.LoadSchemas(conf)
+	vq.LoadJsonSchemas(conf)
 	// CLI for validating - or just new cmd ??
 
 	// TODO: should say which mappings, folder to output to etc...

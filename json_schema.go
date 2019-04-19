@@ -21,7 +21,7 @@ valid, errors := vivographql.Validate(schema, string(json))
 var schemas map[string]*gojsonschema.Schema
 
 // preloading at start - then storing by key typeName
-func LoadSchemas(conf Config) {
+func LoadJsonSchemas(conf Config) {
 	schemas = make(map[string]*gojsonschema.Schema)
 
 	log.Printf("looking for schemas in %s\n", conf.Schemas.Dir)
@@ -56,7 +56,7 @@ func LoadSchemas(conf Config) {
 
 }
 
-func RetrieveSchema(typeName string) *gojsonschema.Schema {
+func RetrieveJsonSchema(typeName string) *gojsonschema.Schema {
 	switch typeName {
 	case "person":
 		return schemas["person"]
