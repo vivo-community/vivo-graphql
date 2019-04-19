@@ -624,6 +624,18 @@ type GrantList struct {
 // }`
 //
 // result := ExecuteQuery(qry, schema) ?
+
+func ExecuteQueryWithParams(query string, schema graphql.Schema,
+	variables map[string]interface{}) *graphql.Result {
+	//
+	result := graphql.Do(graphql.Params{
+		Schema:         schema,
+		RequestString:  query,
+		VariableValues: variables,
+	})
+	return result
+}
+
 func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,

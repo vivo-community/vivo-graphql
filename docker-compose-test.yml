@@ -10,7 +10,7 @@ services:
       - discovery.type=single-node
     volumes:
       # need to change ... right?
-      - esdata:/usr/share/elasticsearch/data
+      - esdata:/usr/share/elasticsearch/test_data
     ports:
       - 9200:9200
     networks:
