@@ -41,6 +41,9 @@ func main() {
 		// TODO: check for error?
 		viper.BindEnv("elastic.url")
 		viper.BindEnv("graphql.port")
+		viper.BindEnv("schemas.dir")
+		viper.BindEnv("mapping.templates.layout")
+		viper.BindEnv("mapping.templates.include")
 	}
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
@@ -65,6 +68,9 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
 	})
+
+	fmt.Printf("mapping.templates.layout=%s\n", conf.Mapping.Templates.Layout)
+	fmt.Printf("mapping.templates.include=%s\n", conf.Mapping.Templates.Include)
 
 	handler := vq.MakeGraphqlHandler()
 	// add Graphql handler - could make other handlers here too

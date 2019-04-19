@@ -21,6 +21,10 @@ type IndexEngine interface {
 	AddFundingRoles(fundingRoles ...FundingRole)
 	AddPublications(publications ...Publication)
 	AddAuthorships(authorships ...Authorship)
+
+	// Clear functions e.g
+	// ClearPeopleIndex()
+	// Clear ...
 }
 
 // will be different per index engine
