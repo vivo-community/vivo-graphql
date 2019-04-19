@@ -1,7 +1,9 @@
 package vivographql
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/graphql-go/graphql"
 )
@@ -17,7 +19,7 @@ func personMutation(params graphql.ResolveParams) (interface{}, error) {
 		Id: id,
 	}
 	err := errors.New("not implemented")
-	// do something like this:
+	// would do something like this:
 	// indexer.SavePerson(newPerson)
 
 	// this might make it async
@@ -28,7 +30,6 @@ func personMutation(params graphql.ResolveParams) (interface{}, error) {
 
 // TODO: these both will have to validate - so should share that logic
 func personValidation(params graphql.ResolveParams) (interface{}, error) {
-	// marshall and cast the argument value
 	id, _ := params.Args["id"].(string)
 
 	// perform mutation operation here
@@ -36,10 +37,24 @@ func personValidation(params graphql.ResolveParams) (interface{}, error) {
 	newPerson := &Person{
 		Id: id,
 	}
-	err := errors.New("not implemented")
-	// do something like this:
-	// indexer.SavePerson(newPerson)
 
+	schema := RetrieveSchema("person")
+	b, err := json.Marshal(newPerson)
+
+	// NOTE: this is only true/false now
+	valid, errList := Validate(schema, string(b))
+
+	if !valid {
+		// ResultError object
+		for _, e := range errList {
+			// TODO: should do something better than this
+			fmt.Printf("%s\n", e.Description())
+		}
+		// way to return multiple errors? errList ???
+		err = errors.New("not valid")
+	}
+
+	//err = errors.New("not implemented")
 	// this might make it async
 	return func() (interface{}, error) {
 		return &newPerson, err

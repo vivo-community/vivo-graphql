@@ -14,7 +14,7 @@ import (
 
 schema := vivographql.RetrieveSchema("person")
 json := `{some_data: "hello"}`
-valid := vivographql.Validate(schema, string(json))
+valid, errors := vivographql.Validate(schema, string(json))
 
 */
 
@@ -79,13 +79,15 @@ func RetrieveSchema(typeName string) *gojsonschema.Schema {
 }
 
 // maybe allow []byte for data param
-func Validate(schema *gojsonschema.Schema, data string) bool {
+// []ResultError
+func Validate(schema *gojsonschema.Schema, data string) (bool, []gojsonschema.ResultError) {
 	docLoader := gojsonschema.NewStringLoader(data)
 	result, err := schema.Validate(docLoader)
+	var empty []gojsonschema.ResultError
 
 	if err != nil {
 		fmt.Println("error validating")
-		return false
+		return false, empty
 	}
 
 	if result.Valid() {
@@ -93,13 +95,8 @@ func Validate(schema *gojsonschema.Schema, data string) bool {
 		if err != nil {
 			fmt.Printf("- %s\n", err)
 		}
-		return true
+		return true, empty
 	} else {
-		fmt.Printf("The document is not valid. see errors :\n")
-		for _, err := range result.Errors() {
-			// Err implements the ResultError interface
-			fmt.Printf("- %s\n", err)
-		}
-		return false
+		return false, result.Errors()
 	}
 }
