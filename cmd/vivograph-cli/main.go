@@ -54,6 +54,10 @@ func main() {
 		// TODO: check for error?
 		viper.BindEnv("elastic.url")
 		viper.BindEnv("graphql.port")
+		viper.BindEnv("schemas.dir")
+		viper.BindEnv("mapping.templates.layout")
+		viper.BindEnv("mapping.templates.include")
+
 	}
 
 	mappings := flag.Bool("mappings", false, "whether to generate elastic mapping files")
