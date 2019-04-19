@@ -72,6 +72,9 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 		//"addEducation": AddEducation,
 		//"createCourse": CreateCourse,
 		// etc...
+		"validatePerson": ValidatePerson,
+		//"validatePublication": ValidatePublication,
+		// etc...
 	},
 })
 
@@ -97,6 +100,19 @@ var CreatePerson = &graphql.Field{
 	//	"person": &graphql.ArgumentConfig{Type: PersonInput},
 	//},
 	Resolve: personMutation,
+}
+
+var ValidatePerson = &graphql.Field{
+	Type: person, // the return type for this field
+	Args: graphql.FieldConfigArgument{
+		// TODO: all fields here?
+		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+	},
+	// TODO: maybe something like this? not sure
+	//Args: graphql.FieldConfigArgument{
+	//	"person": &graphql.ArgumentConfig{Type: PersonInput},
+	//},
+	Resolve: personValidation,
 }
 
 var GetPerson = &graphql.Field{
