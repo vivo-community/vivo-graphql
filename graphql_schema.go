@@ -2,28 +2,37 @@ package vivographql
 
 //https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
 
 func MakeGraphqlHandler() *handler.Handler {
-	schema := MakeSchema()
+	schema := MakeSchema() // could call GetVivoSchema()
 	h := handler.New(&handler.Config{
-		Schema:   &schema,
+		Schema:   schema,
 		GraphiQL: true,
 		Pretty:   true,
 	})
 	return h
 }
 
-func MakeSchema() graphql.Schema {
+// make this global ???
+var schema *graphql.Schema
+
+func GetVivoSchema() *graphql.Schema {
+	if schema == nil {
+		schema = MakeSchema()
+	}
+	return schema
+}
+
+func MakeSchema() *graphql.Schema {
+	// ignoring error
 	var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query:    RootQuery,
 		Mutation: RootMutation,
 	})
-	return schema
+	return &schema
 }
 
 // how to do something like this?
@@ -122,7 +131,7 @@ var GetPerson = &graphql.Field{
 		"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 	},
 	// how to switch resolver based on config?  solr/elastic ?
-	// also how to get Resolver object into very Field?
+	// also how to get Resolver object into every Field?
 	//Resolve: resolver.PersonResolver
 	Resolve: personResolver,
 }
@@ -613,7 +622,6 @@ type GrantList struct {
 
 // A way to just call queries without the server (maybe?)
 // e.g.
-// schema := MakeSchema()
 // qry := `{
 //	publicationList {
 //	  results {
@@ -623,29 +631,32 @@ type GrantList struct {
 //	 }
 // }`
 //
-// result := ExecuteQuery(qry, schema) ?
+// result := ExecuteQuery(qry)
+// or
+// params := map[string]string{
+//    "id": "per000001",
+//}
+// result := ExecuteQueryWithParams(qry, params)
 
-func ExecuteQueryWithParams(query string, schema graphql.Schema,
+// NOTE: just a wrapper - probably better to just get schema
+// and then use graphql lib directly
+func ExecuteQueryWithParams(query string,
 	variables map[string]interface{}) *graphql.Result {
-	//
+	schema := GetVivoSchema()
 	result := graphql.Do(graphql.Params{
-		Schema:         schema,
+		Schema:         *schema,
 		RequestString:  query,
 		VariableValues: variables,
 	})
 	return result
 }
 
-func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
+// just in case there are no parameters
+func ExecuteQuery(query string) *graphql.Result {
+	schema := GetVivoSchema()
 	result := graphql.Do(graphql.Params{
-		Schema:        schema,
+		Schema:        *schema,
 		RequestString: query,
 	})
-
-	// Error check
-	if len(result.Errors) > 0 {
-		fmt.Printf("Unexpected errors inside ExecuteQuery: %v", result.Errors)
-	}
-
 	return result
 }
