@@ -1,0 +1,13 @@
+TODO List
+
+1. make way to load reference data
+2. write test - starting (TestMain) with reloading reference data
+    a. might use docker-compose-test.yml to start elastic instance
+    b. test functions to add/update data work
+3. make resolvers interchangeable to (non-existent) solr index functions
+4. make mutations - and validation of incoming json
+    a. should list errors (maybe) - instead of just first error
+    b. should be able to efficiently batch (as elastic does) - not sure how
+       to return errors then (or if it fails as transaction?)
+5. Fill out more mutation/validation fields for person object (people)
+

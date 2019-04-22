@@ -17,3 +17,9 @@ in current directory (see config.toml.example)
 
 * endpoint on `GRAPHQL_PORT`
 * see localhost:<GRAPHQL_PORT>/graphql
+
+## coding conventions
+
+trying to follow conventions outlined in [Practical Go: Real world advice for writing maintainable Go programs](https://dave.cheney.net/practical-go/presentations/qcon-china.html)
+
+in particular, avoiding over-using packages
