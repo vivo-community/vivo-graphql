@@ -29,6 +29,7 @@ func personMutation(params graphql.ResolveParams) (interface{}, error) {
 }
 
 // TODO: these both will have to validate - so should share that logic
+// (instead of repeating like it does here)
 func personValidation(params graphql.ResolveParams) (interface{}, error) {
 	id, _ := params.Args["id"].(string)
 

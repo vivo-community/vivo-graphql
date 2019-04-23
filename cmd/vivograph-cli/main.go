@@ -3,17 +3,32 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/knakk/rdf"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	vq "github.com/vivo-community/vivo-graphql"
 )
 
 var conf vq.Config
+
+func importReferenceData() {
+	fileName := "docs/sample-data.n3"
+	f, err := os.Open(fileName)
+	if err != nil {
+		// handle error
+	}
+	dec := rdf.NewTripleDecoder(f, rdf.Turtle)
+	for triple, err := dec.Decode(); err != io.EOF; triple, err = dec.Decode() {
+		// do something with triple ..
+		fmt.Println(triple.Subj.String())
+	}
+}
 
 func outputMappings() {
 	// TODO: this is only one, and doesn't allow you to point
@@ -57,10 +72,11 @@ func main() {
 		viper.BindEnv("schemas.dir")
 		viper.BindEnv("mapping.templates.layout")
 		viper.BindEnv("mapping.templates.include")
-
 	}
 
 	mappings := flag.Bool("mappings", false, "whether to generate elastic mapping files")
+
+	reference := flag.Bool("reference", false, "whether to import reference data")
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
@@ -85,6 +101,10 @@ func main() {
 	if *mappings {
 		vq.LoadMappingTemplates(conf)
 		outputMappings()
+	}
+
+	if *reference {
+		importReferenceData()
 	}
 
 }

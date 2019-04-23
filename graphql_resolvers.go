@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	//ge "github.com/OIT-ads-web/graphql_endpoint"
-	//"github.com/OIT-ads-web/graphql_endpoint/elastic"
 	"github.com/graphql-go/graphql"
-	//"github.com/vivo-community/vivo-graphql/elastic"
 
 	ms "github.com/mitchellh/mapstructure"
 )

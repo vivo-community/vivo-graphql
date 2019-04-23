@@ -18,6 +18,8 @@ github.com/graphql-go/relay v0.0.0-20171208134043-54350098cfe5 h1:7fNeIw+3vvQjnJ
 github.com/graphql-go/relay v0.0.0-20171208134043-54350098cfe5/go.mod h1:JaXUeU9JGLA7FGTZJ254WFzDz8NMfE9Pym6ipTmFnP4=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
+github.com/knakk/rdf v0.0.0-20190304171630-8521bf4c5042 h1:Vzdm5hdlLdpJOKK+hKtkV5u7xGZmNW6aUBjGcTfwx84=
+github.com/knakk/rdf v0.0.0-20190304171630-8521bf4c5042/go.mod h1:fYE0718xXI13XMYLc6iHtvXudfyCGMsZ9hxSM1Ommpg=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

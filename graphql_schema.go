@@ -2,6 +2,8 @@ package vivographql
 
 //https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
+	"sync"
+
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
@@ -16,13 +18,18 @@ func MakeGraphqlHandler() *handler.Handler {
 	return h
 }
 
-// make this global ???
+// stole 'once' idea from here:
+// http://marcio.io/2015/07/singleton-pattern-in-go/
 var schema *graphql.Schema
 
+// NOTE: this is a little weird - only
+// one 'once' per package
+var oneSchema sync.Once
+
 func GetVivoSchema() *graphql.Schema {
-	if schema == nil {
+	oneSchema.Do(func() {
 		schema = MakeSchema()
-	}
+	})
 	return schema
 }
 

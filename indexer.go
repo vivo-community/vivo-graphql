@@ -30,6 +30,7 @@ type IndexEngine interface {
 // will be different per index engine
 type Indexer interface {
 	GetClient() interface{}
+	Stop() // need way to call underlying to defer
 }
 
 // would (long term) need some mechanism for choosing index
