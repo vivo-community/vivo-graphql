@@ -43,6 +43,7 @@ func LoadJsonSchemas(conf Config) {
 
 		if err != nil {
 			fmt.Println("could not load schema")
+			// TODO: shouldn't panic
 			panic(err)
 		}
 
@@ -74,6 +75,7 @@ func RetrieveJsonSchema(typeName string) *gojsonschema.Schema {
 		return schemas["education"]
 	default:
 		err := fmt.Sprintf("could not load schema, cancelling %s\n", typeName)
+		// TODO: shouldn't panic
 		panic(err)
 	}
 }

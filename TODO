@@ -1,6 +1,7 @@
 TODO List
 
-1. make way to load reference data
+1. make way to load reference data - from n3 file, or csv
+   or json files (not sure which one)
 2. write test - starting (TestMain) with reloading reference data
     a. might use docker-compose-test.yml to start elastic instance
     b. test functions to add/update data work
@@ -10,4 +11,9 @@ TODO List
     b. should be able to efficiently batch (as elastic does) - not sure how
        to return errors then (or if it fails as transaction?)
 5. Fill out more mutation/validation fields for person object (people)
-
+6. *.bat file versions of *.sh files for Windows developers
+   or just all docker all the time?
+7. Or way to develop either locally or using docker - maybe shell
+   script to call into docker build (would then need *.bat and 
+   *.sh files)
+8.

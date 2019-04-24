@@ -1,6 +1,5 @@
 package vivographql
 
-//https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
 import (
 	"sync"
 
@@ -9,7 +8,7 @@ import (
 )
 
 func MakeGraphqlHandler() *handler.Handler {
-	schema := MakeSchema() // could call GetVivoSchema()
+	schema := GetVivoSchema()
 	h := handler.New(&handler.Config{
 		Schema:   schema,
 		GraphiQL: true,
