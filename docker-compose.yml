@@ -17,12 +17,16 @@ services:
     ports:
       - 9200:9200
     networks:
-      -vivoql_network
+      - vivoql_network
   gographql:
     image: golang:1.12.1
     working_dir: /app
+    env_file:
+    - .env
     ports:
-      - "9001:9001"
+      # NOTE: this probably can't both be an environmental
+      # variable AND be set here
+      - "9002:9002"
     volumes:
       - .:/app
       - $GOPATH/pkg/mod:/go/pkg/mod
