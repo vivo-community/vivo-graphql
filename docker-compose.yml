@@ -24,8 +24,8 @@ services:
     env_file:
     - .env
     ports:
-      # NOTE: this probably can't both be an environmental
-      # variable AND be set here
+      # FIXME: in the app this is an environmental
+      # variable - not sure how to pass that here
       - "9002:9002"
     volumes:
       - .:/app
