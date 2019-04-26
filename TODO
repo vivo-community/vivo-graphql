@@ -32,6 +32,15 @@ TODO List
     you have to write Go code resolvers - but I don't know if there's a way
     to write a generic resolver to match up with elastic fields this way?  
 
-https://99designs.com/blog/engineering/gqlgen-a-graphql-server-generator-for-go/
+    https://99designs.com/blog/engineering/gqlgen-a-graphql-server-generator-for-go/
+11. Some general guideline for test coverage % - or at least testing approach.  I 
+    tend to agree with this:
+    
+    [https://rbcs-us.com/documents/Why-Most-Unit-Testing-is-Waste.pdf]
+    (Why Most Unit Testing is Waste 1Why Most Unit Testing is Waste By James O Coplien)
+12.    
+
+
+
 
 
