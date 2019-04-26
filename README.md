@@ -23,3 +23,17 @@ in current directory (see config.toml.example)
 trying to follow conventions outlined in [Practical Go: Real world advice for writing maintainable Go programs](https://dave.cheney.net/practical-go/presentations/qcon-china.html)
 
 in particular, avoiding over-using packages
+
+## Docker
+
+Should be able to start an environment to code using docker-compose.yml
+
+Right now I think you'd have to do this though:
+
+> `docker-compose start -d`
+
+And after every code change:
+
+> `docker-compose restart`
+
+which is not great.  There is the `CompileDaemon` approach

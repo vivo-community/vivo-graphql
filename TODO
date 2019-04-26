@@ -16,4 +16,22 @@ TODO List
 7. Or way to develop either locally or using docker - maybe shell
    script to call into docker build (would then need *.bat and 
    *.sh files)
-8.
+8. How to have something like a dynamic schema, that is still typed?
+   https://github.com/tonyghita/graphql-go-example
+   (uses https://github.com/graph-gophers/graphql-go )
+9. In general - using Go to wrap DSL calls to Elastic - which itself
+   is a json based DSL - might not be tenable (see Aggregation stuff
+   in grapql_resolvers) - it might be better to be closer to the metal
+   e.g. closer to just consructing the json and sending that.
+
+   On the other hand, spending a lot of effort with string manipulation,
+   concatentation etc... seems like accidental complexity - almost need
+   a middle ground like SQLAlchemy does for SQL - e.g. json builder of
+   some sort - making it composable.
+10. Or generate code from schema? How does that flow with updates?  Seems like
+    you have to write Go code resolvers - but I don't know if there's a way
+    to write a generic resolver to match up with elastic fields this way?  
+
+https://99designs.com/blog/engineering/gqlgen-a-graphql-server-generator-for-go/
+
+
