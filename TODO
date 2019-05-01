@@ -1,0 +1,43 @@
+TODO List
+
+1. make way to load reference data - from n3 file, or csv
+   or json files (not sure which one)
+2. write test - starting (TestMain) with reloading reference data
+   (see #1)
+   a. maybe use docker-compose-test.yml to start elastic instance
+   b. test functions to add/update the data etc... 
+3. How to have something like a dynamic schema, that is still typed?
+   https://github.com/tonyghita/graphql-go-example
+   (uses https://github.com/graph-gophers/graphql-go )
+4. In general - using Go to wrap DSL calls to Elastic - which itself
+   is a json based DSL - might not be tenable (see Aggregation stuff
+   in grapql_resolvers) - it might be better to be closer to the metal
+   e.g. closer to just consructing the json and sending that.
+
+   On the other hand, spending a lot of effort with string manipulation,
+   concatentation etc... seems like accidental complexity - almost need
+   a middle ground like SQLAlchemy does for SQL - e.g. json builder of
+   some sort - making it composable.
+5. Or generate code from schema? How does that flow with updates?  Seems like
+   you have to write Go code resolvers - but I don't know if there's a way
+   to write a generic resolver to match up with elastic fields this way?  
+
+   https://99designs.com/blog/engineering/gqlgen-a-graphql-server-generator-for-go/
+6. Some general guideline for test coverage % - or at least testing approach.  I 
+   tend to agree with this:
+    
+   [https://rbcs-us.com/documents/Why-Most-Unit-Testing-is-Waste.pdf]
+   (Why Most Unit Testing is Waste 1Why Most Unit Testing is Waste By James O Coplien)
+
+Possibly (later):
+
+1. make resolvers interchangeable to (non-existent) solr index functions
+   NOTE: have interfaces in places, but have nothing that would work
+   in resolvers
+2. make mutations - and validation of incoming json
+   a. should list errors (maybe) - instead of just first error
+   b. should be able to efficiently batch (as elastic does) - not sure how
+      to return errors then (or if it fails as transaction?)
+
+
+

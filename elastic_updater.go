@@ -1,0 +1,427 @@
+package vivographql
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/olivere/elastic"
+)
+
+// TODO: only accept Identifiable interface ?
+// also - should maybe be added to Indexer interface ???
+// also send in context ??
+func (engine *ElasticIndexer) addToIndex(index string, obj Identifiable) {
+
+	//func (engine *ElasticIndexer) addToIndex(index string, typeName string, id string, obj interface{}) {
+	ctx := context.Background()
+
+	//engine := GetElasticIndexer()
+	client := engine.GetClient()
+
+	get1, err := client.Get().
+		Index(index).
+		Type(obj.TypeName()).
+		Id(obj.ID()).
+		Do(ctx)
+
+	switch {
+	case elastic.IsNotFound(err):
+		put1, err := client.Index().
+			Index(index).
+			Type(obj.TypeName()).
+			Id(obj.ID()).
+			BodyJson(obj).
+			Do(ctx)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("ADDED %s to index %s, type %s\n", put1.Id, put1.Index, put1.Type)
+		spew.Println(obj)
+		return
+	case elastic.IsConnErr(err):
+		panic(err)
+	case elastic.IsTimeout(err):
+		panic(err)
+	case err != nil:
+		panic(err)
+	}
+
+	if get1.Found {
+		update1, err := client.Update().
+			RetryOnConflict(2).
+			Index(index).
+			Type(obj.TypeName()).
+			Id(obj.ID()).
+			Doc(obj).
+			Do(ctx)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("UPDATED %s to index %s, type %s\n", update1.Id, update1.Index, update1.Type)
+	}
+
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	spew.Println(obj)
+}
+
+// Identifiable ...? context ???
+// TODO: make it more clear what parameters mean, maybe make part of it use Identifiable
+// interface (but of Parent object)
+// just to be able to use this:
+// Type(parent.TypeName()).
+// Id(parent.ID()).
+func (engine *ElasticIndexer) partialUpdate(index string, typeName string, id string, prop string, obj interface{}) {
+	ctx := context.Background()
+
+	//engine := GetElasticIndexer()
+	client := engine.GetClient()
+
+	get1, err := client.Get().
+		Index(index).
+		Type(typeName).
+		Id(id).
+		Do(ctx)
+
+	switch {
+	case elastic.IsNotFound(err):
+		// TODO: in theory we could add without source doc
+		fmt.Printf("no doc id=%s found to append to\n", id)
+		//fmt.Printf("ADDED %s to index %s, type %s\n", put1.Id, put1.Index, put1.Type)
+		return
+	case elastic.IsConnErr(err):
+		panic(err)
+	case elastic.IsTimeout(err):
+		panic(err)
+	case err != nil:
+		panic(err)
+	}
+
+	if get1.Found {
+		update1, err := client.Update().
+			RetryOnConflict(2).
+			Index(index).
+			Type(typeName).
+			Id(id).
+			//Doc(obj).
+			// replace all of prop ??...
+			Doc(map[string]interface{}{prop: obj}).
+			DetectNoop(true).
+			Do(ctx)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("UPDATED %s to index %s, type %s\n", update1.Id, update1.Index, update1.Type)
+	}
+
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	spew.Println(obj)
+}
+
+func (engine *ElasticIndexer) clearIndex(name string) {
+	ctx := context.Background()
+
+	//engine := GetElasticIndexer()
+	client := engine.GetClient()
+
+	deleteIndex, err := client.DeleteIndex(name).Do(ctx)
+	if err != nil {
+		log.Printf("ERROR:%v\n", err)
+		return
+	}
+	if !deleteIndex.Acknowledged {
+		// Not acknowledged
+		log.Println("Not acknowledged")
+	} else {
+		log.Println("Acknowledged!")
+	}
+}
+
+/*
+func (engine *ElasticIndexer) ClearPeopleIndex() {
+	clearIndex("people")
+}
+
+func (engine *ElasticIndexer) ClearAffiliationsIndex() {
+	clearIndex("affiliations")
+}
+
+func (engine *ElasticIndexer) ClearEducationsIndex() {
+	clearIndex("educations")
+}
+
+func (engine *ElasticIndexer) ClearGrantsIndex() {
+	clearIndex("grants")
+}
+
+func (engine *ElasticIndexer) ClearFundingRolesIndex() {
+	clearIndex("funding-roles")
+}
+
+func (engine *ElasticIndexer) ClearPublicationsIndex() {
+	clearIndex("publications")
+}
+
+func (engine *ElasticIndexer) ClearAuthorshipsIndex() {
+	clearIndex("authorships")
+}
+
+*/
+// make these return error?
+func PersonMapping() (string, error) {
+	return RenderTemplate("person.tmpl")
+}
+
+func AffiliationMapping() (string, error) {
+	return RenderTemplate("affiliation.tmpl")
+}
+
+func FundingRoleMapping() (string, error) {
+	return RenderTemplate("funding-role.tmpl")
+}
+
+func PublicationMapping() (string, error) {
+	return RenderTemplate("publication.tmpl")
+}
+
+func AuthorshipMapping() (string, error) {
+	return RenderTemplate("authorship.tmpl")
+}
+
+func GrantMapping() (string, error) {
+	return RenderTemplate("grant.tmpl")
+}
+
+// NOTE: 'mappingJson' is just a json string plugged into template
+func (engine *ElasticIndexer) makeIndex(name string, mappingJson string) {
+	ctx := context.Background()
+
+	//engine := GetElasticIndexer()
+	client := engine.GetClient()
+
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := client.IndexExists(name).Do(ctx)
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	if !exists {
+		// Create a new index.
+		createIndex, err := client.CreateIndex(name).BodyString(mappingJson).Do(ctx)
+		if err != nil {
+			// Handle error
+			panic(err)
+		}
+		if !createIndex.Acknowledged {
+			// Not acknowledged
+		}
+	}
+}
+
+/*
+
+not sure whether to add these to interface or not
+does solr have same idea of 'index' e.g. 'core' ?
+
+func MakePeopleIndex(mapping string) {
+	makeIndex("people", mapping)
+}
+
+func MakeGrantsIndex(mapping string) {
+	makeIndex("grants", mapping)
+}
+
+func MakeFundingRolesIndex(mapping string) {
+	makeIndex("funding-roles", mapping)
+}
+
+func MakePublicationsIndex(mapping string) {
+	makeIndex("publications", mapping)
+}
+
+func MakeAuthorshipsIndex(mapping string) {
+	makeIndex("authorships", mapping)
+}
+
+*/
+
+// needs json data -->
+// TODO: use Identifiable interface? e.g.
+// func AddResources(resources ...Identifiable) {
+//	// how to make new Person{} each loop
+//}
+
+// maybe gather first - array of string is probably wrong param
+// maybe just (json string)
+// TODO: 1) not sure these should be public methods
+//       2) whether they will be used
+//       3) maybe rename Parse or something - could be outside
+//          of 'elastic' area entirely
+func GatherPeople(people ...string) []Person {
+	// TODO: should probably read into array instead
+	// of one at a time
+	results := make([]Person, len(people))
+	for _, element := range people {
+		resource := Person{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("rpoblem with %v:%#v\n", element, err)
+			continue
+		}
+		results = append(results, resource)
+	}
+	return results
+}
+
+// elastic indexer is a global object
+func (indexer *ElasticIndexer) AddPeople(people ...Person) {
+	// TODO: batch up ???
+	for _, element := range people {
+		indexer.addToIndex("people", element)
+	}
+}
+
+func GatherAffiliations(positions ...string) map[string][]Affiliation {
+	collections := make(map[string][]Affiliation)
+
+	for _, element := range positions {
+		resource := Affiliation{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("problem with %v:%#v\n", element, err)
+			continue
+		}
+		collections[resource.PersonId] = append(collections[resource.PersonId], resource)
+	}
+	return collections
+}
+
+// way to do equivalent of ...
+func (indexer *ElasticIndexer) AddAffiliationsToPeople(collections map[string][]Affiliation) {
+	for key, value := range collections {
+		indexer.partialUpdate("people", "person", key, "affiliationList", value)
+	}
+}
+
+func GatherEducations(educations ...string) map[string][]Education {
+	collections := make(map[string][]Education)
+
+	for _, element := range educations {
+		resource := Education{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("problem with %v:%#v\n", element, err)
+			continue
+		}
+		collections[resource.PersonId] = append(collections[resource.PersonId], resource)
+	}
+	return collections
+}
+
+func (indexer *ElasticIndexer) AddEducationsToPeople(collections map[string][]Education) {
+	for key, value := range collections {
+		indexer.partialUpdate("people", "person", key, "educationList", value)
+	}
+}
+
+func GatherGrants(grants ...string) []Grant {
+	results := make([]Grant, len(grants))
+	for _, element := range grants {
+		resource := Grant{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("problem with %v:%#v\n", element, err)
+			continue
+		}
+		results = append(results, resource)
+	}
+	return results
+}
+
+func (indexer *ElasticIndexer) AddGrants(grants ...Grant) {
+	for _, element := range grants {
+		indexer.addToIndex("grants", element)
+	}
+}
+
+func GatherFundingRoles(roles ...string) []FundingRole {
+	results := make([]FundingRole, len(roles))
+	for _, element := range roles {
+		resource := FundingRole{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("problem with %v:%#v\n", element, err)
+			continue
+		}
+		results = append(results, resource)
+	}
+	return results
+}
+
+func (indexer *ElasticIndexer) AddFundingRoles(roles ...FundingRole) {
+	for _, element := range roles {
+		indexer.addToIndex("funding-roles", element)
+	}
+}
+
+func GatherPublications(publications ...string) []Publication {
+	results := make([]Publication, len(publications))
+	for _, element := range publications {
+		resource := Publication{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("problem with %v:%#v\n", element, err)
+			continue
+		}
+		results = append(results, resource)
+	}
+	return results
+}
+
+// need at least an id
+func (indexer *ElasticIndexer) AddPublications(publications ...Publication) {
+	for _, element := range publications {
+		indexer.addToIndex("publications", element)
+	}
+}
+
+func GatherAuthorships(authorships ...string) []Authorship {
+	results := make([]Authorship, len(authorships))
+	for _, element := range authorships {
+		resource := Authorship{}
+		data := []byte(element)
+		err := json.Unmarshal(data, &resource)
+		if err != nil {
+			fmt.Printf("problem with %v:%#v\n", element, err)
+			continue
+		}
+		results = append(results, resource)
+	}
+	return results
+}
+
+func (indexer *ElasticIndexer) AddAuthorships(authorships ...Authorship) {
+	for _, element := range authorships {
+		indexer.addToIndex("authorships", element)
+	}
+}

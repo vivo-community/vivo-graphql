@@ -1,0 +1,48 @@
+version: "3"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
+    container_name: vq_elasticsearch
+    environment:
+      # likely need to change
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-headers=Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With
+      - http.cors.allow-credentials=true
+    volumes:
+      # need to change ... right?
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - vivoql_network
+  gographql:
+    image: golang:1.12.1
+    working_dir: /app
+    env_file:
+    - .env
+    ports:
+      # FIXME: in the app this is an environmental
+      # variable - not sure how to pass that here
+      - "9002:9002"
+    volumes:
+      - .:/app
+      - $GOPATH/pkg/mod:/go/pkg/mod
+    environment:
+      - GOPATH=/go
+    networks:
+      - vivoql_network
+    command: >
+        bash -c "./build.sh
+        && ./cmd/vivograph/vivograph"
+
+networks:
+  vivoql_network:
+    driver: bridge
+
+volumes:
+  esdata:
+    driver: local
+
